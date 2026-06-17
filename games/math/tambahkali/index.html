@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Game Pintar Matematika</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="header-bar">
+        <div class="avatar-container">
+            <img src="https://api.dicebear.com/7.x/fun-emoji/svg?seed=Jagoan&backgroundColor=b6e3f4" class="avatar" alt="Karakter Laki-laki">
+            <img src="https://api.dicebear.com/7.x/fun-emoji/svg?seed=Bintang&backgroundColor=ffdfbf" class="avatar" alt="Karakter Perempuan">
+        </div>
+        <button class="btn-audio" id="audio-toggle" onclick="toggleAudio()">🔊</button>
+    </div>
+    <h1>Matematika Seru!</h1>
+
+    <audio id="bgm" src="https://upload.wikimedia.org/wikipedia/commons/3/34/8_Bit_Surf.ogg" loop></audio>
+
+    <div id="screen-type" class="box-container">
+        <h2>Pilih Cara Main:</h2>
+        <button class="btn btn-mode-prac" onclick="selectType('practice')">🎯 Latihan Santai</button>
+        <button class="btn btn-mode-chal" onclick="selectType('challenge')">⏱️ Tantangan 2 Menit</button>
+    </div>
+
+    <div id="screen-operation" class="box-container" style="display: none;">
+        <h2>Pilih Pelajaran:</h2>
+        <button class="btn btn-add" onclick="selectOperation('add')">➕ Penjumlahan</button>
+        <button class="btn btn-mul" onclick="selectOperation('mul')">✖️ Perkalian</button>
+        <button class="btn btn-mix" onclick="selectOperation('mix')">🎲 Campuran</button>
+        <button class="btn btn-back" onclick="showScreen('screen-type')">⬅️ Kembali</button>
+    </div>
+
+    <div id="screen-level" class="box-container" style="display: none;">
+        <h2 id="level-title">Pilih Level:</h2>
+        <button class="btn btn-lvl-easy" onclick="selectLevel('easy')">🌟 Mudah</button>
+        <button class="btn btn-lvl-med" onclick="selectLevel('medium')">⭐⭐ Sedang</button>
+        <button class="btn btn-lvl-hard" onclick="selectLevel('hard')">🔥 Sulit</button>
+        <button class="btn btn-back" onclick="showScreen('screen-operation')">⬅️ Kembali</button>
+    </div>
+
+    <div id="screen-game" class="box-container" style="display: none;">
+        <div id="score-board">
+            <span class="info-badge" id="game-info">Mode</span>
+            <span class="info-badge" id="timer-badge" style="display:none;">⏱️ <span id="time-left">120</span>s</span>
+            <span>Skor: <strong id="score">0</strong></span>
+        </div>
+        
+        <div id="question">1 + 1 = ?</div>
+        
+        <div class="options-grid">
+            <button class="btn-option" onclick="checkAnswer(0)" id="opt0">1</button>
+            <button class="btn-option" onclick="checkAnswer(1)" id="opt1">2</button>
+            <button class="btn-option" onclick="checkAnswer(2)" id="opt2">3</button>
+            <button class="btn-option" onclick="checkAnswer(3)" id="opt3">4</button>
+        </div>
+
+        <div id="feedback"></div>
+        <button class="btn btn-back" onclick="endGameEarly()">⏹️ Berhenti & Lihat Hasil</button>
+    </div>
+
+    <div id="screen-result" class="box-container" style="display: none;">
+        <h2>Sesi Selesai! 🎉</h2>
+        <h3 style="color: #f39c12;">Total Skor: <span id="final-score">0</span></h3>
+        <p>Review Jawabanmu:</p>
+        <div id="review-list" class="review-container">
+            </div>
+        <button class="btn btn-add" onclick="showScreen('screen-type')" style="margin-top: 20px;">Main Lagi</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
