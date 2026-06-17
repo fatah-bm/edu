@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Alphabet A–Z</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 15px;
+            text-align: center;
+        }
+        .top-bar {
+            display: flex;
+            align-items: center;
+            max-width: 560px;
+            margin: 0 auto 10px auto;
+        }
+        .btn-back {
+            background-color: #c7ceea;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #a0a8c8;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            text-decoration: none;
+            color: #333;
+        }
+        .btn-back:active { transform: translateY(4px); box-shadow: none; }
+        .btn-home {
+            background-color: #ffd166;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #ccaa33;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            text-decoration: none;
+            color: #333;
+        }
+        .btn-home:active { transform: translateY(4px); box-shadow: none; }
+        h1 {
+            color: #ff6b6b;
+            font-size: 28px;
+            margin: 0;
+            flex: 1;
+        }
+        .subtitle {
+            color: #777;
+            font-size: 15px;
+            margin: 0 0 16px 0;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            max-width: 560px;
+            margin: 0 auto;
+        }
+        .card {
+            background-color: white;
+            border: 3px solid #4ecdc4;
+            border-radius: 14px;
+            padding: 10px 4px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #36b2aa;
+            transition: transform 0.1s, box-shadow 0.1s;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .card:active { transform: translateY(5px); box-shadow: none; }
+        .card.playing {
+            border-color: #ff6b6b;
+            box-shadow: 0 5px 0 #cc4444;
+            background-color: #fff5f5;
+        }
+        .card .upper {
+            font-size: 34px;
+            font-weight: bold;
+            color: #ff6b6b;
+            display: block;
+            line-height: 1;
+        }
+        .card .lower {
+            font-size: 22px;
+            font-weight: bold;
+            color: #4ecdc4;
+            display: block;
+            line-height: 1.2;
+        }
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            max-width: 560px;
+            margin: 20px auto 0 auto;
+        }
+        .btn-page {
+            background-color: #4ecdc4;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 22px;
+            font-family: inherit;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #36b2aa;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-page:active { transform: translateY(4px); box-shadow: none; }
+        .btn-page:disabled {
+            background-color: #ccc;
+            box-shadow: 0 4px 0 #aaa;
+            cursor: default;
+        }
+        .page-indicator {
+            font-size: 16px;
+            color: #555;
+            font-weight: bold;
+            min-width: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a class="btn-back" href="../">⬅ Back</a>
+        <h1>Alphabet A–Z</h1>
+        <a class="btn-home" href="../../../../">Home</a>
+    </div>
+    <p class="subtitle">How to say these letters? Tap a card!</p>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="pagination">
+        <button class="btn-page" id="btn-prev" onclick="changePage(-1)">◀</button>
+        <span class="page-indicator" id="page-indicator"></span>
+        <button class="btn-page" id="btn-next" onclick="changePage(1)">▶</button>
+    </div>
+
+    <script>
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+        const PER_PAGE = 10;
+        let currentPage = 0;
+        const totalPages = Math.ceil(letters.length / PER_PAGE);
+
+        function renderPage() {
+            const grid = document.getElementById('grid');
+            const pageLetters = letters.slice(currentPage * PER_PAGE, (currentPage + 1) * PER_PAGE);
+
+            grid.innerHTML = pageLetters.map(L => `
+                <div class="card" data-letter="${L}">
+                    <span class="upper">${L}</span>
+                    <span class="lower">${L.toLowerCase()}</span>
+                </div>
+            `).join('');
+
+            grid.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('click', () => speak(card.dataset.letter, card));
+            });
+
+            document.getElementById('page-indicator').textContent = `${currentPage + 1} / ${totalPages}`;
+            document.getElementById('btn-prev').disabled = currentPage === 0;
+            document.getElementById('btn-next').disabled = currentPage === totalPages - 1;
+        }
+
+        function changePage(dir) {
+            currentPage += dir;
+            renderPage();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function speak(letter, card) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(letter);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.85;
+            utterance.pitch = 1.2;
+            card.classList.add('playing');
+            utterance.onend = () => card.classList.remove('playing');
+            utterance.onerror = () => card.classList.remove('playing');
+            window.speechSynthesis.speak(utterance);
+        }
+
+        renderPage();
+    </script>
+</body>
+</html>

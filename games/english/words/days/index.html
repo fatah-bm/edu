@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Days of the Week</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 15px;
+            text-align: center;
+        }
+        .top-bar {
+            display: flex;
+            align-items: center;
+            max-width: 560px;
+            margin: 0 auto 10px auto;
+        }
+        .btn-back {
+            background-color: #c7ceea;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #a0a8c8;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            text-decoration: none;
+            color: #333;
+        }
+        .btn-back:active { transform: translateY(4px); box-shadow: none; }
+        .btn-home {
+            background-color: #ffd166;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #ccaa33;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            text-decoration: none;
+            color: #333;
+        }
+        .btn-home:active { transform: translateY(4px); box-shadow: none; }
+        h1 { color: #ff6b6b; font-size: 28px; margin: 0; flex: 1; }
+        .subtitle { color: #777; font-size: 15px; margin: 0 0 16px 0; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 560px;
+            margin: 0 auto;
+        }
+        .card {
+            background-color: white;
+            border-radius: 14px;
+            padding: 12px 6px;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .card:active { transform: translateY(5px); box-shadow: none !important; }
+        .card.playing { opacity: 0.75; }
+        .badge {
+            display: block;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            margin: 0 auto 8px auto;
+            line-height: 56px;
+            font-size: 13px;
+            font-weight: bold;
+            color: white;
+            letter-spacing: 0.5px;
+        }
+        .card p { font-size: 13px; font-weight: bold; color: #2c3e50; margin: 0; }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a class="btn-back" href="../">⬅ Back</a>
+        <h1>Days of the Week</h1>
+        <a class="btn-home" href="../../../../">Home</a>
+    </div>
+    <p class="subtitle">How to pronounce these days? Tap a card!</p>
+
+    <div class="grid" id="grid"></div>
+
+    <script>
+        const days = [
+            { word: 'Sunday',    abbr: 'SUN', color: '#ff6b6b', shadow: '#cc4444' },
+            { word: 'Monday',    abbr: 'MON', color: '#ffa552', shadow: '#cc7a30' },
+            { word: 'Tuesday',   abbr: 'TUE', color: '#ffd166', shadow: '#ccaa33' },
+            { word: 'Wednesday', abbr: 'WED', color: '#2ecc71', shadow: '#27ae60' },
+            { word: 'Thursday',  abbr: 'THU', color: '#4ecdc4', shadow: '#36b2aa' },
+            { word: 'Friday',    abbr: 'FRI', color: '#3498db', shadow: '#2176ae' },
+            { word: 'Saturday',  abbr: 'SAT', color: '#9b59b6', shadow: '#7d3c98' },
+        ];
+
+        const grid = document.getElementById('grid');
+        grid.innerHTML = days.map(d => `
+            <div class="card" data-word="${d.word}"
+                 style="border: 3px solid ${d.color}; box-shadow: 0 5px 0 ${d.shadow};">
+                <span class="badge" style="background-color: ${d.color};">${d.abbr}</span>
+                <p>${d.word}</p>
+            </div>
+        `).join('');
+
+        grid.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', () => speak(card.dataset.word, card));
+        });
+
+        function speak(word, card) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.85;
+            utterance.pitch = 1.2;
+            card.classList.add('playing');
+            utterance.onend = () => card.classList.remove('playing');
+            utterance.onerror = () => card.classList.remove('playing');
+            window.speechSynthesis.speak(utterance);
+        }
+    </script>
+</body>
+</html>

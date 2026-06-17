@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Singular & Plural</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 15px;
+            text-align: center;
+        }
+        .top-bar {
+            display: flex;
+            align-items: center;
+            max-width: 560px;
+            margin: 0 auto 10px auto;
+        }
+        .btn-back, .btn-home {
+            border: none;
+            border-radius: 12px;
+            padding: 8px 14px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            text-decoration: none;
+            color: #333;
+        }
+        .btn-back { background-color: #c7ceea; box-shadow: 0 4px 0 #a0a8c8; }
+        .btn-home { background-color: #ffd166; box-shadow: 0 4px 0 #ccaa33; }
+        .btn-back:active, .btn-home:active { transform: translateY(4px); box-shadow: none; }
+        h1 { color: #ff6b6b; font-size: 24px; margin: 0; flex: 1; }
+        .subtitle { color: #777; font-size: 14px; margin: 0 0 12px 0; }
+
+        .col-headers {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            max-width: 560px;
+            margin: 0 auto 8px auto;
+        }
+        .col-label {
+            border-radius: 10px;
+            padding: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+        .col-label.singular { background-color: #3498db; }
+        .col-label.plural   { background-color: #9b59b6; }
+
+        .pairs { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+
+        .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        .card {
+            background-color: white;
+            border-radius: 14px;
+            padding: 12px 6px;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .card:active { transform: translateY(5px); box-shadow: none !important; }
+        .card.playing { opacity: 0.7; }
+
+        .card.singular { border: 3px solid #3498db; box-shadow: 0 5px 0 #2176ae; }
+        .card.plural   { border: 3px solid #9b59b6; box-shadow: 0 5px 0 #7d3c98; }
+
+        .single-img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 6px auto;
+        }
+        .multi-imgs {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin-bottom: 6px;
+        }
+        .multi-imgs img {
+            width: 38px;
+            height: 38px;
+            object-fit: contain;
+        }
+        .img-placeholder {
+            background: #eee;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #bbb;
+            font-size: 10px;
+            margin: 0 auto 6px auto;
+        }
+        .card p {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+            word-break: break-word;
+        }
+        .ending {
+            background-color: #ffd166;
+            color: #b35c00;
+            border-radius: 4px;
+            padding: 0 3px;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            max-width: 560px;
+            margin: 16px auto 0 auto;
+        }
+        .btn-page {
+            background-color: #4ecdc4;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 22px;
+            font-family: inherit;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #36b2aa;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-page:active { transform: translateY(4px); box-shadow: none; }
+        .btn-page:disabled { background-color: #ccc; box-shadow: 0 4px 0 #aaa; cursor: default; }
+        .page-indicator { font-size: 16px; color: #555; font-weight: bold; min-width: 80px; }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a class="btn-back" href="../">⬅ Back</a>
+        <h1>Singular & Plural</h1>
+        <a class="btn-home" href="../../../../">Home</a>
+    </div>
+    <p class="subtitle">Tap a word to hear it!</p>
+
+    <div class="col-headers">
+        <div class="col-label singular">One (Singular)</div>
+        <div class="col-label plural">Many (Plural)</div>
+    </div>
+
+    <div class="pairs" id="pairs"></div>
+
+    <div class="pagination">
+        <button class="btn-page" id="btn-prev" onclick="changePage(-1)">◀</button>
+        <span class="page-indicator" id="page-indicator"></span>
+        <button class="btn-page" id="btn-next" onclick="changePage(1)">▶</button>
+    </div>
+
+    <script>
+        const items = [
+            { singular: 'onion',      plural: 'onions',       base: 'onion',     ending: 's',   emoji: '🧅', img: 'https://img.icons8.com/color/96/onion.png' },
+            { singular: 'strawberry', plural: 'strawberries', base: 'strawberr', ending: 'ies', emoji: '🍓', img: 'https://img.icons8.com/color/96/strawberry.png' },
+            { singular: 'tomato',     plural: 'tomatoes',     base: 'tomato',    ending: 'es',  emoji: '🍅', img: 'https://img.icons8.com/color/96/tomato.png' },
+            { singular: 'carrot',     plural: 'carrots',      base: 'carrot',    ending: 's',   emoji: '🥕', img: 'https://img.icons8.com/color/96/carrot.png' },
+            { singular: 'cabbage',    plural: 'cabbages',     base: 'cabbage',   ending: 's',   emoji: '🥬', img: 'https://img.icons8.com/color/96/cabbage.png' },
+            { singular: 'broccoli',   plural: 'broccolis',    base: 'broccoli',  ending: 's',   emoji: '🥦', img: 'https://img.icons8.com/color/96/broccoli.png' },
+            { singular: 'donut',      plural: 'donuts',       base: 'donut',     ending: 's',   emoji: '🍩', img: 'https://img.icons8.com/color/96/donut.png' },
+            { singular: 'leaf',       plural: 'leaves',       base: 'lea',       ending: 'ves', emoji: '🍃', img: 'https://img.icons8.com/color/96/leaf.png' },
+            { singular: 'knife',      plural: 'knives',       base: 'kni',       ending: 'ves', emoji: '🔪', img: 'https://img.icons8.com/color/96/knife.png' },
+            { singular: 'book',       plural: 'books',        base: 'book',      ending: 's',   emoji: '📖', img: 'https://img.icons8.com/color/96/book.png' },
+            { singular: 'pen',        plural: 'pens',         base: 'pen',       ending: 's',   emoji: '🖊️', img: 'https://img.icons8.com/color/96/pen.png' },
+            { singular: 'pencil',     plural: 'pencils',      base: 'pencil',    ending: 's',   emoji: '✏️', img: 'https://img.icons8.com/color/96/pencil.png' },
+            { singular: 'toy',        plural: 'toys',         base: 'toy',       ending: 's',   emoji: '🧸', img: 'https://img.icons8.com/color/96/toy.png' },
+        ];
+
+        const PER_PAGE = 3;
+        let currentPage = 0;
+        const totalPages = Math.ceil(items.length / PER_PAGE);
+
+        function imgTag(src, emoji, cls) {
+            const sz = cls === 'single-img' ? 52 : 34;
+            return `<img class="${cls}" src="${src}" alt="${cls}"
+                        onerror="this.outerHTML='<span style=\\'font-size:${sz}px;display:block;text-align:center\\'>${emoji}</span>'">`;
+        }
+
+        function renderPage() {
+            const pairs = document.getElementById('pairs');
+            const pageItems = items.slice(currentPage * PER_PAGE, (currentPage + 1) * PER_PAGE);
+
+            pairs.innerHTML = pageItems.map(item => `
+                <div class="pair">
+                    <div class="card singular" data-word="${item.singular}">
+                        ${imgTag(item.img, item.emoji, 'single-img')}
+                        <p>${item.singular}</p>
+                    </div>
+                    <div class="card plural" data-word="${item.plural}" data-singular="${item.singular}">
+                        <div class="multi-imgs">
+                            ${imgTag(item.img, item.emoji, 'multi-img')}
+                            ${imgTag(item.img, item.emoji, 'multi-img')}
+                        </div>
+                        <p>${item.base}<span class="ending">${item.ending}</span></p>
+                    </div>
+                </div>
+            `).join('');
+
+            pairs.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('click', () => {
+                    if (card.classList.contains('plural')) {
+                        speakPlural(card.dataset.singular, card.dataset.word, card);
+                    } else {
+                        speakWord(card.dataset.word, card);
+                    }
+                });
+            });
+
+            document.getElementById('page-indicator').textContent = `${currentPage + 1} / ${totalPages}`;
+            document.getElementById('btn-prev').disabled = currentPage === 0;
+            document.getElementById('btn-next').disabled = currentPage === totalPages - 1;
+        }
+
+        function changePage(dir) {
+            currentPage += dir;
+            renderPage();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function speakWord(word, card, rate = 0.85) {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(word);
+            u.lang = 'en-US';
+            u.rate = rate;
+            u.pitch = 1.2;
+            card.classList.add('playing');
+            u.onend = () => card.classList.remove('playing');
+            u.onerror = () => card.classList.remove('playing');
+            window.speechSynthesis.speak(u);
+        }
+
+        function speakPlural(singular, plural, card) {
+            speakWord(plural, card, 0.85);
+        }
+
+        renderPage();
+    </script>
+</body>
+</html>

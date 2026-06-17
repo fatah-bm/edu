@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Voice Game Kelas 1 SD</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f8ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+
+        /* Desain kartu yang besar dan ramah anak */
+        .card {
+            background-color: white;
+            border: 4px solid #3498db;
+            border-radius: 15px;
+            padding: 20px;
+            width: 150px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #2980b9;
+            transition: all 0.1s ease;
+        }
+
+        /* Efek ditekan seperti tombol mainan */
+        .card:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #2980b9;
+        }
+
+        .card img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+        }
+
+        .card p {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0 0 0;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🔊 Tap the card to hear!</h1>
+
+    <div class="container">
+        <div class="card" data-speak="Apple">
+            <img src="https://cdn-icons-png.flaticon.com/128/415/415733.png" alt="Apple">
+            <p>Apple</p>
+        </div>
+
+        <div class="card" data-speak="Cat">
+            <img src="https://cdn-icons-png.flaticon.com/128/616/616430.png" alt="Cat">
+            <p>Cat</p>
+        </div>
+
+        <div class="card" data-speak="Car">
+            <img src="https://cdn-icons-png.flaticon.com/128/741/741407.png" alt="Car">
+            <p>Car</p>
+        </div>
+    </div>
+
+    <script>
+        // Fungsi utama untuk membunyikan suara
+        function speakEnglish(text) {
+            // 1. Buat object ucapan baru
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            // 2. Set bahasanya ke English (US)
+            utterance.lang = 'en-US';
+            
+            // 3. Atur kecepatan (0.1 sampai 10). Karena anak kelas 1 SD, kita buat agak lambat (0.9)
+            utterance.rate = 0.9; 
+            
+            // 4. Atur nada suara (0 sampai 2). 1.2 sedikit lebih ceria/cempreng cocok untuk anak-anak
+            utterance.pitch = 1.2; 
+
+            // 5. Perintahkan browser untuk berbicara
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Ambil semua elemen kartu
+        const cards = document.querySelectorAll('.card');
+
+        // Tambahkan event klik ke setiap kartu
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                // Ambil tulisan dari atribut data-speak masing-masing kartu
+                const word = card.getAttribute('data-speak');
+                speakEnglish(word);
+            });
+        });
+    </script>
+</body>
+</html>

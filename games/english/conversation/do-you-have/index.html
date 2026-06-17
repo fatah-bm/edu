@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Do You Have?</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 15px;
+        }
+        .top-bar {
+            display: flex;
+            align-items: center;
+            max-width: 480px;
+            margin: 0 auto 16px auto;
+        }
+        .btn-back, .btn-home {
+            border: none;
+            border-radius: 12px;
+            padding: 8px 14px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            text-decoration: none;
+            color: #333;
+        }
+        .btn-back { background-color: #c7ceea; box-shadow: 0 4px 0 #a0a8c8; }
+        .btn-home { background-color: #ffd166; box-shadow: 0 4px 0 #ccaa33; }
+        .btn-back:active, .btn-home:active { transform: translateY(4px); box-shadow: none; }
+        h1 { color: #9b59b6; font-size: 22px; margin: 0; flex: 1; text-align: center; }
+
+        .obj-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .obj-header .emoji { font-size: 64px; display: block; }
+        .obj-header h2 { color: #2c3e50; font-size: 18px; margin: 6px 0 0; text-transform: capitalize; }
+
+        .dialog {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 0 8px;
+        }
+        .bubble-wrap { display: flex; }
+        .bubble-wrap.left  { justify-content: flex-start; }
+        .bubble-wrap.right { justify-content: flex-end; }
+        .bubble-col { display: flex; flex-direction: column; max-width: 82%; }
+        .bubble-col.right { align-items: flex-end; }
+        .label { font-size: 11px; font-weight: bold; color: #aaa; margin-bottom: 3px; padding: 0 4px; }
+
+        .bubble {
+            padding: 14px 18px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1.4;
+            transition: opacity 0.15s, transform 0.1s;
+            touch-action: manipulation;
+            user-select: none;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+        }
+        .bubble:active { transform: translateY(3px); box-shadow: none; }
+        .bubble.playing { opacity: 0.55; }
+        .bubble.question  { background-color: #3498db; color: white; border-bottom-left-radius: 4px; }
+        .bubble.statement { background-color: #9b59b6; color: white; border-bottom-left-radius: 4px; }
+
+        .responses {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 0 8px;
+        }
+        .resp-bubble {
+            padding: 14px 10px;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: opacity 0.15s, transform 0.1s;
+            touch-action: manipulation;
+            user-select: none;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+        }
+        .resp-bubble:active { transform: translateY(3px); box-shadow: none; }
+        .resp-bubble.playing { opacity: 0.55; }
+        .resp-bubble.yes { background-color: #2ecc71; color: white; border-bottom-right-radius: 4px; }
+        .resp-bubble.no  { background-color: #e74c3c; color: white; border-bottom-right-radius: 4px; }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            max-width: 480px;
+            margin: 24px auto 0 auto;
+        }
+        .btn-page {
+            background-color: #9b59b6;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 22px;
+            font-family: inherit;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #7d3c98;
+            touch-action: manipulation;
+        }
+        .btn-page:active { transform: translateY(4px); box-shadow: none; }
+        .btn-page:disabled { background-color: #ccc; box-shadow: 0 4px 0 #aaa; cursor: default; }
+        .page-indicator { font-size: 16px; color: #555; font-weight: bold; min-width: 80px; text-align: center; }
+        .resp-label { font-size: 12px; color: #888; text-align: center; margin: 4px 0 8px; font-weight: bold; padding: 0 8px; }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a class="btn-back" href="../">⬅ Back</a>
+        <h1>Do You Have?</h1>
+        <a class="btn-home" href="../../../../">Home</a>
+    </div>
+
+    <div class="obj-header">
+        <span class="emoji" id="obj-emoji"></span>
+        <h2 id="obj-name"></h2>
+    </div>
+
+    <div class="dialog" id="dialog-question"></div>
+
+    <div class="resp-label">Choose a response:</div>
+    <div class="responses" id="responses"></div>
+
+    <div class="dialog" id="dialog-statement" style="margin-top: 12px;"></div>
+
+    <div class="pagination">
+        <button class="btn-page" id="btn-prev" onclick="changePage(-1)">◀</button>
+        <span class="page-indicator" id="page-indicator"></span>
+        <button class="btn-page" id="btn-next" onclick="changePage(1)">▶</button>
+    </div>
+
+    <script>
+        // number words for "I have n ___"
+        const numWords = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight',
+                          'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen',
+                          'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
+
+        const items = [
+            { emoji: '🖊️',  obj: 'pen',     plural: 'pens',     article: 'a', count: 2  },
+            { emoji: '📖',  obj: 'book',    plural: 'books',    article: 'a', count: 3  },
+            { emoji: '✏️',  obj: 'pencil',  plural: 'pencils',  article: 'a', count: 5  },
+            { emoji: '🧸',  obj: 'toy',     plural: 'toys',     article: 'a', count: 4  },
+            { emoji: '🎒',  obj: 'bag',     plural: 'bags',     article: 'a', count: 1  },
+            { emoji: '🖍️',  obj: 'crayon',  plural: 'crayons',  article: 'a', count: 6  },
+            { emoji: '📏',  obj: 'ruler',   plural: 'rulers',   article: 'a', count: 2  },
+            { emoji: '📓',  obj: 'notebook', plural: 'notebooks', article: 'a', count: 3  },
+        ];
+
+        let currentPage = 0;
+
+        function renderPage() {
+            const item = items[currentPage];
+            const nWord = numWords[item.count];
+            const objWord = item.count === 1 ? item.obj : item.plural;
+
+            document.getElementById('obj-emoji').textContent = item.emoji;
+            document.getElementById('obj-name').textContent = item.obj;
+
+            // Question
+            const question = `Do you have ${item.article} ${item.obj}?`;
+            document.getElementById('dialog-question').innerHTML = `
+                <div class="bubble-wrap left">
+                    <div class="bubble-col">
+                        <div class="label">You</div>
+                        <div class="bubble question" data-text="${question}">${question}</div>
+                    </div>
+                </div>
+            `;
+
+            // Responses
+            document.getElementById('responses').innerHTML = `
+                <div class="resp-bubble yes" data-text="Yes, I do.">Yes, I do. ✅</div>
+                <div class="resp-bubble no"  data-text="No, I don't.">No, I don't. ❌</div>
+            `;
+
+            // Statement
+            const statement = `I have ${nWord} ${objWord}.`;
+            document.getElementById('dialog-statement').innerHTML = `
+                <div class="bubble-wrap left">
+                    <div class="bubble-col">
+                        <div class="label">You</div>
+                        <div class="bubble statement" data-text="${statement}">${statement}</div>
+                    </div>
+                </div>
+            `;
+
+            // Add click listeners — question/statement = Person A, responses = Person B
+            document.querySelectorAll('.bubble').forEach(el => {
+                el.addEventListener('click', () => speak(el.dataset.text, el, 'A'));
+            });
+            document.querySelectorAll('.resp-bubble').forEach(el => {
+                el.addEventListener('click', () => speak(el.dataset.text, el, 'B'));
+            });
+
+            document.getElementById('page-indicator').textContent = `${currentPage + 1} / ${items.length}`;
+            document.getElementById('btn-prev').disabled = currentPage === 0;
+            document.getElementById('btn-next').disabled = currentPage === items.length - 1;
+        }
+
+        function changePage(dir) {
+            currentPage += dir;
+            renderPage();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        let voiceA = null, voiceB = null;
+        const femaleNames = ['zira', 'samantha', 'karen', 'moira', 'fiona', 'allison', 'ava',
+                             'victoria', 'female', 'woman', 'susan', 'hazel', 'heera', 'neerja',
+                             'google uk english female', 'google us english'];
+        function loadVoices() {
+            const all = window.speechSynthesis.getVoices();
+            const en = all.filter(v => v.lang.startsWith('en'));
+            if (en.length === 0) return;
+            voiceA = en.find(v => femaleNames.some(k => v.name.toLowerCase().includes(k))) || en[0];
+            voiceB = en.find(v => v !== voiceA) || voiceA;
+        }
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+
+        function speak(text, el, person = 'A') {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'en-US';
+            if (person === 'B') {
+                u.voice = voiceB;
+                u.rate = 0.9;
+                u.pitch = 1.9;
+            } else {
+                u.voice = voiceA;
+                u.rate = 0.85;
+                u.pitch = 1.0;
+            }
+            el.classList.add('playing');
+            u.onend = () => el.classList.remove('playing');
+            u.onerror = () => el.classList.remove('playing');
+            window.speechSynthesis.speak(u);
+        }
+
+        renderPage();
+    </script>
+</body>
+</html>

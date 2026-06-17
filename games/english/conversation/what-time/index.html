@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>What Time Is It?</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 15px;
+        }
+        .top-bar {
+            display: flex;
+            align-items: center;
+            max-width: 480px;
+            margin: 0 auto 16px auto;
+        }
+        .btn-back, .btn-home {
+            border: none;
+            border-radius: 12px;
+            padding: 8px 14px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            text-decoration: none;
+            color: #333;
+        }
+        .btn-back { background-color: #c7ceea; box-shadow: 0 4px 0 #a0a8c8; }
+        .btn-home { background-color: #ffd166; box-shadow: 0 4px 0 #ccaa33; }
+        .btn-back:active, .btn-home:active { transform: translateY(4px); box-shadow: none; }
+        h1 { color: #9b59b6; font-size: 20px; margin: 0; flex: 1; text-align: center; }
+
+        .clock-display {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .clock-emoji { font-size: 100px; display: block; line-height: 1; }
+        .clock-label { font-size: 16px; color: #888; margin-top: 6px; font-weight: bold; }
+
+        .dialog {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 0 8px;
+        }
+        .bubble-wrap { display: flex; }
+        .bubble-wrap.left  { justify-content: flex-start; }
+        .bubble-wrap.right { justify-content: flex-end; }
+        .bubble-col { display: flex; flex-direction: column; max-width: 85%; }
+        .bubble-col.right { align-items: flex-end; }
+        .label { font-size: 11px; font-weight: bold; color: #aaa; margin-bottom: 3px; padding: 0 4px; }
+
+        .bubble {
+            padding: 14px 20px;
+            border-radius: 20px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1.4;
+            transition: opacity 0.15s, transform 0.1s;
+            touch-action: manipulation;
+            user-select: none;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+        }
+        .bubble:active { transform: translateY(3px); box-shadow: none; }
+        .bubble.playing { opacity: 0.55; }
+        .bubble.question { background-color: #3498db; color: white; border-bottom-left-radius: 4px; }
+        .bubble.answer   { background-color: #2ecc71; color: white; border-bottom-right-radius: 4px; }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            max-width: 480px;
+            margin: 28px auto 0 auto;
+        }
+        .btn-page {
+            background-color: #9b59b6;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 22px;
+            font-family: inherit;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #7d3c98;
+            touch-action: manipulation;
+        }
+        .btn-page:active { transform: translateY(4px); box-shadow: none; }
+        .btn-page:disabled { background-color: #ccc; box-shadow: 0 4px 0 #aaa; cursor: default; }
+        .page-indicator { font-size: 16px; color: #555; font-weight: bold; min-width: 80px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a class="btn-back" href="../">⬅ Back</a>
+        <h1>What Time Is It?</h1>
+        <a class="btn-home" href="../../../../">Home</a>
+    </div>
+
+    <div class="clock-display">
+        <span class="clock-emoji" id="clock-emoji"></span>
+        <div class="clock-label" id="clock-label"></div>
+    </div>
+
+    <div class="dialog">
+        <div class="bubble-wrap left">
+            <div class="bubble-col">
+                <div class="label">You</div>
+                <div class="bubble question" data-text="What time is it?">What time is it?</div>
+            </div>
+        </div>
+        <div class="bubble-wrap right">
+            <div class="bubble-col right">
+                <div class="label">Friend</div>
+                <div class="bubble answer" id="answer-bubble"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pagination">
+        <button class="btn-page" id="btn-prev" onclick="changePage(-1)">◀</button>
+        <span class="page-indicator" id="page-indicator"></span>
+        <button class="btn-page" id="btn-next" onclick="changePage(1)">▶</button>
+    </div>
+
+    <script>
+        const hours = [
+            { n: 1,  word: 'one',     emoji: '🕐' },
+            { n: 2,  word: 'two',     emoji: '🕑' },
+            { n: 3,  word: 'three',   emoji: '🕒' },
+            { n: 4,  word: 'four',    emoji: '🕓' },
+            { n: 5,  word: 'five',    emoji: '🕔' },
+            { n: 6,  word: 'six',     emoji: '🕕' },
+            { n: 7,  word: 'seven',   emoji: '🕖' },
+            { n: 8,  word: 'eight',   emoji: '🕗' },
+            { n: 9,  word: 'nine',    emoji: '🕘' },
+            { n: 10, word: 'ten',     emoji: '🕙' },
+            { n: 11, word: 'eleven',  emoji: '🕚' },
+            { n: 12, word: 'twelve',  emoji: '🕛' },
+        ];
+
+        let currentPage = 0;
+
+        function renderPage() {
+            const h = hours[currentPage];
+            const answer = `It's ${h.word} o'clock.`;
+
+            document.getElementById('clock-emoji').textContent = h.emoji;
+            document.getElementById('clock-label').textContent = `${h.n}:00`;
+
+            const answerBubble = document.getElementById('answer-bubble');
+            answerBubble.textContent = answer;
+            answerBubble.dataset.text = answer;
+
+            document.querySelectorAll('.bubble').forEach(b => {
+                b.onclick = () => speak(b.dataset.text, b, b.classList.contains('answer') ? 'B' : 'A');
+            });
+
+            document.getElementById('page-indicator').textContent = `${currentPage + 1} / ${hours.length}`;
+            document.getElementById('btn-prev').disabled = currentPage === 0;
+            document.getElementById('btn-next').disabled = currentPage === hours.length - 1;
+        }
+
+        function changePage(dir) {
+            currentPage += dir;
+            renderPage();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        let voiceA = null, voiceB = null;
+        const femaleNames = ['zira', 'samantha', 'karen', 'moira', 'fiona', 'allison', 'ava',
+                             'victoria', 'female', 'woman', 'susan', 'hazel', 'heera', 'neerja',
+                             'google uk english female', 'google us english'];
+        function loadVoices() {
+            const all = window.speechSynthesis.getVoices();
+            const en = all.filter(v => v.lang.startsWith('en'));
+            if (en.length === 0) return;
+            voiceA = en.find(v => femaleNames.some(k => v.name.toLowerCase().includes(k))) || en[0];
+            voiceB = en.find(v => v !== voiceA) || voiceA;
+        }
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+
+        function speak(text, el, person = 'A') {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'en-US';
+            if (person === 'B') {
+                u.voice = voiceB;
+                u.rate = 0.9;
+                u.pitch = 1.9;
+            } else {
+                u.voice = voiceA;
+                u.rate = 0.85;
+                u.pitch = 1.0;
+            }
+            el.classList.add('playing');
+            u.onend = () => el.classList.remove('playing');
+            u.onerror = () => el.classList.remove('playing');
+            window.speechSynthesis.speak(u);
+        }
+
+        renderPage();
+    </script>
+</body>
+</html>

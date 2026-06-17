@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>English Words</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .top-bar {
+            display: flex;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto 20px auto;
+        }
+        h1 {
+            color: #ff6b6b;
+            font-size: 28px;
+            margin: 0;
+            flex: 1;
+        }
+        .btn-back, .btn-home {
+            border: none;
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            text-decoration: none;
+            color: #333;
+        }
+        .btn-back { background-color: #c7ceea; box-shadow: 0 4px 0 #a0a8c8; }
+        .btn-home { background-color: #ffd166; box-shadow: 0 4px 0 #ccaa33; }
+        .btn-back:active, .btn-home:active { transform: translateY(4px); box-shadow: none; }
+        .grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .card {
+            background-color: white;
+            border: 4px solid #3498db;
+            border-radius: 20px;
+            padding: 20px 30px;
+            width: 160px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #2980b9;
+            text-decoration: none;
+            transition: transform 0.1s, box-shadow 0.1s;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .card:active {
+            transform: translateY(6px);
+            box-shadow: none;
+        }
+        .card img {
+            width: 72px;
+            height: 72px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 10px auto;
+        }
+        .card p {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a class="btn-back" href="../">⬅ Back</a>
+        <h1>English Words</h1>
+        <a class="btn-home" href="../../../">Home</a>
+    </div>
+    <div class="grid">
+        <a class="card" href="./my-body/">
+            <img src="https://img.icons8.com/color/96/human.png" alt="My Body"
+                 onerror="this.style.display='none'">
+            <p>My Body</p>
+        </a>
+        <a class="card" href="./my-family/">
+            <img src="https://img.icons8.com/color/96/family.png" alt="My Family"
+                 onerror="this.style.display='none'">
+            <p>My Family</p>
+        </a>
+        <a class="card" href="./numbers-1-20/">
+            <img src="https://img.icons8.com/color/96/numbers.png" alt="Numbers"
+                 onerror="this.style.display='none'">
+            <p>Numbers 1–20</p>
+        </a>
+        <a class="card" href="./alphabet/">
+            <img src="https://img.icons8.com/color/96/alphabet.png" alt="Alphabet"
+                 onerror="this.style.display='none'">
+            <p>Alphabet A–Z</p>
+        </a>
+        <a class="card" href="./days/">
+            <img src="https://img.icons8.com/color/96/week.png" alt="Days"
+                 onerror="this.style.display='none'">
+            <p>Days</p>
+        </a>
+        <a class="card" href="./months/">
+            <img src="https://img.icons8.com/color/96/calendar.png" alt="Months"
+                 onerror="this.style.display='none'">
+            <p>Months</p>
+        </a>
+        <a class="card" href="./singular-plural/">
+            <img src="https://img.icons8.com/color/96/numbers.png" alt="Singular & Plural"
+                 onerror="this.style.display='none'">
+            <p>Singular & Plural</p>
+        </a>
+    </div>
+</body>
+</html>

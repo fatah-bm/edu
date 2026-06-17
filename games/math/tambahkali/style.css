@@ -20,6 +20,22 @@ h1 {
     max-width: 500px;
     margin: 0 auto 15px auto;
 }
+.btn-home {
+    background-color: #ffd166;
+    border: 3px solid #ccaa33;
+    border-radius: 12px;
+    padding: 6px 14px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #ccaa33;
+    text-decoration: none;
+    color: #333;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+.btn-home:active { transform: translateY(4px); box-shadow: none; }
 .btn-audio {
     background-color: #fff;
     border: 3px solid #ffd166;
