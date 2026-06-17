@@ -87,24 +87,13 @@
             box-shadow: 0 5px 0 #cc4444;
             background-color: #fff5f5;
         }
-        .card img {
+        .sprite {
             width: 64px;
             height: 64px;
-            object-fit: contain;
+            background-image: url('../../../../assets/my-body.png');
+            background-size: 320px 256px;
             display: block;
             margin: 0 auto 8px auto;
-        }
-        .card .placeholder {
-            width: 64px;
-            height: 64px;
-            background-color: #eee;
-            border-radius: 10px;
-            margin: 0 auto 8px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #aaa;
-            font-size: 11px;
         }
         .card p {
             font-size: 15px;
@@ -166,28 +155,14 @@
 
     <script>
         const words = [
-            { word: 'head',      emoji: '🗣️', img: 'https://img.icons8.com/color/96/head.png' },
-            { word: 'hair',      emoji: '💇', img: 'https://img.icons8.com/color/96/hair.png' },
-            { word: 'eyes',      emoji: '👀', img: 'https://img.icons8.com/color/96/eye.png' },
-            { word: 'ears',      emoji: '👂', img: 'https://img.icons8.com/color/96/ear.png' },
-            { word: 'nose',      emoji: '👃', img: 'https://img.icons8.com/color/96/nose.png' },
-            { word: 'mouth',     emoji: '👄', img: 'https://img.icons8.com/color/96/mouth.png' },
-            { word: 'cheek',     emoji: '😊', img: 'https://img.icons8.com/color/96/cheek.png' },
-            { word: 'chin',      emoji: '🧔', img: 'https://img.icons8.com/color/96/chin.png' },
-            { word: 'neck',      emoji: '🧣', img: 'https://img.icons8.com/color/96/neck.png' },
-            { word: 'shoulders', emoji: '🤷', img: 'https://img.icons8.com/color/96/shoulder.png' },
-            { word: 'elbow',     emoji: '💪', img: 'https://img.icons8.com/color/96/elbow.png' },
-            { word: 'fingers',   emoji: '☝️', img: 'https://img.icons8.com/color/96/finger.png' },
-            { word: 'hands',     emoji: '🤲', img: 'https://img.icons8.com/color/96/hand.png' },
-            { word: 'stomach',   emoji: '🫃', img: 'https://img.icons8.com/color/96/stomach.png' },
-            { word: 'knees',     emoji: '🦵', img: 'https://img.icons8.com/color/96/knee.png' },
-            { word: 'legs',      emoji: '🦵', img: 'https://img.icons8.com/color/96/leg.png' },
-            { word: 'toes',      emoji: '🦶', img: 'https://img.icons8.com/color/96/toes.png' },
-            { word: 'feet',      emoji: '🦶', img: 'https://img.icons8.com/color/96/foot.png' },
-            { word: 'foot',      emoji: '🦶', img: 'https://img.icons8.com/color/96/foot.png' },
+            'head', 'hair', 'eyes', 'ears', 'nose',
+            'mouth', 'cheek', 'chin', 'neck', 'shoulders',
+            'elbow', 'fingers', 'hands', 'stomach', 'knees',
+            'legs', 'toes', 'feet', 'foot',
         ];
 
         const PER_PAGE = 6;
+        const COLS = 5;
         let currentPage = 0;
         const totalPages = Math.ceil(words.length / PER_PAGE);
 
@@ -196,13 +171,16 @@
             const start = currentPage * PER_PAGE;
             const pageWords = words.slice(start, start + PER_PAGE);
 
-            grid.innerHTML = pageWords.map(item => `
-                <div class="card" data-word="${item.word}">
-                    <img src="${item.img}" alt="${item.word}"
-                         onerror="this.outerHTML='<span style=\\'font-size:52px;display:block;text-align:center;margin:0 auto 8px\\'>${item.emoji}</span>'">
-                    <p>${item.word.charAt(0).toUpperCase() + item.word.slice(1)}</p>
-                </div>
-            `).join('');
+            grid.innerHTML = pageWords.map((word, i) => {
+                const idx = start + i;
+                const bx = (idx % COLS) * 64;
+                const by = Math.floor(idx / COLS) * 64;
+                return `
+                <div class="card" data-word="${word}">
+                    <div class="sprite" style="background-position: -${bx}px -${by}px;"></div>
+                    <p>${word.charAt(0).toUpperCase() + word.slice(1)}</p>
+                </div>`;
+            }).join('');
 
             grid.querySelectorAll('.card').forEach(card => {
                 card.addEventListener('click', () => speak(card.dataset.word, card));
