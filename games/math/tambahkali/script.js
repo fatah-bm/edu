@@ -80,7 +80,7 @@ function selectType(type) {
 
 function selectOperation(op) {
     currentOperation = op;
-    let title = op === 'add' ? 'Penjumlahan' : (op === 'mul' ? 'Perkalian' : 'Campuran');
+    let title = op === 'add' ? 'Penjumlahan' : (op === 'mul' ? 'Perkalian' : (op === 'mix' ? 'Campuran' : 'Cari Yang Hilang'));
     document.getElementById('level-title').innerText = `Level ${title}:`;
     showScreen('screen-level');
 }
@@ -91,7 +91,7 @@ function selectLevel(lvl) {
     gameHistory = [];
     document.getElementById('score').innerText = score;
     
-    let opName = currentOperation === 'add' ? '➕' : (currentOperation === 'mul' ? '✖️' : '🎲');
+    let opName = currentOperation === 'add' ? '➕' : (currentOperation === 'mul' ? '✖️' : (currentOperation === 'mix' ? '🎲' : '🔍'));
     let lvlName = lvl === 'easy' ? 'Mudah' : (lvl === 'medium' ? 'Sedang' : 'Sulit');
     document.getElementById('game-info').innerText = `${opName} | ${lvlName}`;
 
@@ -133,15 +133,16 @@ function endGameEarly() {
 function generateQuestion() {
     isProcessing = false;
     document.getElementById('feedback').innerText = '';
-    
+
     let num1, num2;
     let activeOp = currentOperation;
-    if (activeOp === 'mix') {
+    const isFindMode = activeOp === 'find';
+    if (activeOp === 'mix' || activeOp === 'find') {
         activeOp = Math.random() > 0.5 ? 'add' : 'mul';
     }
 
     let symbol = activeOp === 'add' ? '+' : 'x';
-    let correctAnswer = 0;
+    let result = 0;
 
     if (activeOp === 'add') {
         if (currentLevel === 'easy') {
@@ -154,8 +155,8 @@ function generateQuestion() {
             num1 = Math.floor(Math.random() * 11) + 5;
             num2 = Math.floor(Math.random() * 11) + 5;
         }
-        correctAnswer = num1 + num2;
-    } 
+        result = num1 + num2;
+    }
     else if (activeOp === 'mul') {
         if (currentLevel === 'easy') {
             const easyPool = [1, 2, 10];
@@ -169,25 +170,44 @@ function generateQuestion() {
             num2 = Math.floor(Math.random() * 5) + 6;
         }
         if (Math.random() > 0.5) { let temp = num1; num1 = num2; num2 = temp; }
-        correctAnswer = num1 * num2;
+        result = num1 * num2;
     }
 
-    // Inisialisasi status soal baru ke dalam object
+    // Tentukan posisi tanda tanya: 0=kiri, 1=kanan, 2=hasil
+    let qDisplay, trueAns;
+    if (isFindMode) {
+        const unknownPos = Math.floor(Math.random() * 3);
+        if (unknownPos === 0) {
+            qDisplay = `? ${symbol} ${num2} = ${result}`;
+            trueAns = num1;
+        } else if (unknownPos === 1) {
+            qDisplay = `${num1} ${symbol} ? = ${result}`;
+            trueAns = num2;
+        } else {
+            qDisplay = `${num1} ${symbol} ${num2} = ?`;
+            trueAns = result;
+        }
+    } else {
+        qDisplay = `${num1} ${symbol} ${num2} = ?`;
+        trueAns = result;
+    }
+
     currentQuestionData = {
-        qText: `${num1} ${symbol} ${num2}`,
-        trueAns: correctAnswer,
+        qDisplay: qDisplay,
+        qText: `${num1} ${symbol} ${num2} = ${result}`,
+        trueAns: trueAns,
         mistakes: 0,
         solved: false
     };
 
-    document.getElementById('question').innerText = `${currentQuestionData.qText} = ?`;
+    document.getElementById('question').innerText = currentQuestionData.qDisplay;
 
-    let answers = [correctAnswer];
+    let answers = [trueAns];
     while (answers.length < 4) {
-        let offset = Math.floor(Math.random() * 9) - 4; 
-        if (offset === 0) offset = 2; 
-        let wrongAnswer = correctAnswer + offset;
-        if (wrongAnswer < 0) wrongAnswer = correctAnswer + 3;
+        let offset = Math.floor(Math.random() * 9) - 4;
+        if (offset === 0) offset = 2;
+        let wrongAnswer = trueAns + offset;
+        if (wrongAnswer < 0) wrongAnswer = trueAns + 3;
         if (!answers.includes(wrongAnswer)) answers.push(wrongAnswer);
     }
     answers.sort(() => Math.random() - 0.5);
@@ -261,17 +281,14 @@ function finishGame() {
             const div = document.createElement('div');
             
             if (item.solved && item.mistakes === 0) {
-                // Langsung Benar
                 div.className = 'review-item correct';
-                div.innerHTML = `<b>${item.qText} = ${item.trueAns}</b><br><small style="color: #2ecc71;">✅ Sempurna</small>`;
+                div.innerHTML = `<b>${item.qDisplay.replace('?', `<span style="background:#e67e22;color:white;border-radius:8px;padding:1px 8px;">${item.trueAns}</span>`)}</b><br><small style="color: #2ecc71;">✅ Sempurna</small>`;
             } else if (item.solved && item.mistakes > 0) {
-                // Akhirnya benar, tapi sempat salah
                 div.className = 'review-item warning';
-                div.innerHTML = `<b>${item.qText} = ${item.trueAns}</b><br><small style="color: #d35400;">⚠️ Benar setelah salah ${item.mistakes} kali</small>`;
+                div.innerHTML = `<b>${item.qDisplay.replace('?', `<span style="background:#e67e22;color:white;border-radius:8px;padding:1px 8px;">${item.trueAns}</span>`)}</b><br><small style="color: #d35400;">⚠️ Benar setelah salah ${item.mistakes} kali</small>`;
             } else if (!item.solved) {
-                // Berhenti sebelum menemukan jawaban yang benar
                 div.className = 'review-item wrong';
-                div.innerHTML = `<b>${item.qText} = ${item.trueAns}</b><br><small style="color: #c0392b;">❌ Dihentikan (Sempat salah ${item.mistakes} kali)</small>`;
+                div.innerHTML = `<b>${item.qDisplay.replace('?', `<span style="background:#e67e22;color:white;border-radius:8px;padding:1px 8px;">${item.trueAns}</span>`)}</b><br><small style="color: #c0392b;">❌ Dihentikan (Sempat salah ${item.mistakes} kali)</small>`;
             }
             
             reviewContainer.appendChild(div);
