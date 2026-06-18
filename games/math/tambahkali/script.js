@@ -64,9 +64,42 @@ function playSfx(type) {
     }
 }
 
+function playTick() {
+    if (!isAudioEnabled) return;
+    initAudioContext();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.type = 'square';
+    const urgent = timeLeft <= 10;
+    osc.frequency.setValueAtTime(urgent ? 1500 : 1100, audioCtx.currentTime);
+    gain.gain.setValueAtTime(urgent ? 0.18 : 0.07, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.045);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.045);
+}
+
+function playBell() {
+    if (!isAudioEnabled) return;
+    initAudioContext();
+    [0, 0.35, 0.7].forEach(delay => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(987, audioCtx.currentTime + delay);
+        gain.gain.setValueAtTime(0.5, audioCtx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + 0.7);
+        osc.start(audioCtx.currentTime + delay);
+        osc.stop(audioCtx.currentTime + delay + 0.7);
+    });
+}
+
 // Navigasi UI
 function showScreen(screenId) {
-    const screens = ['screen-type', 'screen-operation', 'screen-level', 'screen-game', 'screen-result'];
+    const screens = ['screen-type', 'screen-operation', 'screen-level', 'screen-countdown', 'screen-game', 'screen-result'];
     screens.forEach(id => document.getElementById(id).style.display = 'none');
     document.getElementById(screenId).style.display = 'block';
 }
@@ -97,13 +130,29 @@ function selectLevel(lvl) {
 
     if (gameType === 'challenge') {
         document.getElementById('timer-badge').style.display = 'inline-block';
-        startTimer();
+        showCountdown();
     } else {
         document.getElementById('timer-badge').style.display = 'none';
+        showScreen('screen-game');
+        generateQuestion();
     }
+}
 
-    showScreen('screen-game');
-    generateQuestion();
+function showCountdown() {
+    showScreen('screen-countdown');
+    document.getElementById('countdown-info').innerText =
+        `⏱️ Tantangan 2 Menit  ·  ${document.getElementById('game-info').innerText}`;
+
+    const el = document.getElementById('countdown-number');
+    el.innerText = '3';
+    setTimeout(() => { el.innerText = '2'; }, 1000);
+    setTimeout(() => { el.innerText = '1'; }, 2000);
+    setTimeout(() => { el.innerText = 'Mulai! 🚀'; }, 3000);
+    setTimeout(() => {
+        showScreen('screen-game');
+        generateQuestion();
+        startTimer();
+    }, 3700);
 }
 
 function startTimer() {
@@ -116,7 +165,10 @@ function startTimer() {
         document.getElementById('time-left').innerText = timeLeft;
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
+            playBell();
             finishGame();
+        } else {
+            playTick();
         }
     }, 1000);
 }

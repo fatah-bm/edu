@@ -98,6 +98,18 @@ h1 {
 .btn-find { background-color: #8e44ad; }
 .btn-back { background-color: #c7ceea; color: #333; font-size: 16px; margin-top: 15px;}
 
+#countdown-number {
+    font-size: 96px;
+    font-weight: bold;
+    color: #ff6b6b;
+    line-height: 1.1;
+    margin: 10px 0;
+}
+#countdown-info {
+    font-size: 15px;
+    color: #888;
+    margin-bottom: 5px;
+}
 #question {
     font-size: 45px;
     font-weight: bold;
