@@ -72,7 +72,7 @@
         }
         .bubble:active { transform: translateY(3px); box-shadow: none; }
         .bubble.playing { opacity: 0.55; }
-        .bubble::after { content: ' 🔊'; font-size: 0.65em; opacity: 0.75; }
+        .bubble::before { content: '🔊 '; font-size: 0.9em; opacity: 0.75; }
         .bubble.question  { background-color: #3498db; color: white; border-bottom-left-radius: 4px; }
         .bubble.statement { background-color: #9b59b6; color: white; border-bottom-left-radius: 4px; }
 
@@ -98,7 +98,9 @@
         }
         .resp-bubble:active { transform: translateY(3px); box-shadow: none; }
         .resp-bubble.playing { opacity: 0.55; }
-        .resp-bubble::after { content: ' 🔊'; font-size: 0.65em; opacity: 0.75; }
+        .resp-bubble::before { content: '🔊 '; font-size: 0.9em; opacity: 0.75; }
+        .resp-bubble.yes::after { content: ' 👍'; font-size: 1.1em; }
+        .resp-bubble.no::after  { content: ' 👎'; font-size: 1.1em; }
         .resp-bubble.yes { background-color: #2ecc71; color: white; border-bottom-right-radius: 4px; }
         .resp-bubble.no  { background-color: #e74c3c; color: white; border-bottom-right-radius: 4px; }
 
@@ -194,8 +196,8 @@
 
             // Responses
             document.getElementById('responses').innerHTML = `
-                <div class="resp-bubble yes" data-text="Yes, I do.">Yes, I do. ✅</div>
-                <div class="resp-bubble no"  data-text="No, I don't.">No, I don't. ❌</div>
+                <div class="resp-bubble yes" data-text="Yes, I do.">Yes, I do.</div>
+                <div class="resp-bubble no"  data-text="No, I don't.">No, I don't.</div>
             `;
 
             // Statement
