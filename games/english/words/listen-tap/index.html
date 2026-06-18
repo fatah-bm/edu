@@ -174,15 +174,15 @@
             family: {
                 label: 'My Family', cardType: 'img',
                 items: [
-                    { word: 'father',      v: 'https://img.icons8.com/color/96/father.png' },
-                    { word: 'mother',      v: 'https://img.icons8.com/color/96/mother.png' },
-                    { word: 'brother',     v: 'https://img.icons8.com/color/96/brother.png' },
-                    { word: 'sister',      v: 'https://img.icons8.com/color/96/sister.png' },
-                    { word: 'grandfather', v: 'https://img.icons8.com/color/96/grandfather.png' },
-                    { word: 'grandmother', v: 'https://img.icons8.com/color/96/grandmother.png' },
-                    { word: 'baby',        v: 'https://img.icons8.com/color/96/baby.png' },
-                    { word: 'son',         v: 'https://img.icons8.com/color/96/boy.png' },
-                    { word: 'daughter',    v: 'https://img.icons8.com/color/96/girl.png' },
+                    { word: 'father',      v: 'https://img.icons8.com/color/96/father.png',      emoji: '👨' },
+                    { word: 'mother',      v: 'https://img.icons8.com/color/96/mother.png',      emoji: '👩' },
+                    { word: 'brother',     v: 'https://img.icons8.com/color/96/brother.png',     emoji: '👦' },
+                    { word: 'sister',      v: 'https://img.icons8.com/color/96/sister.png',      emoji: '👧' },
+                    { word: 'grandfather', v: 'https://img.icons8.com/color/96/grandfather.png', emoji: '👴' },
+                    { word: 'grandmother', v: 'https://img.icons8.com/color/96/grandmother.png', emoji: '👵' },
+                    { word: 'baby',        v: 'https://img.icons8.com/color/96/baby.png',        emoji: '👶' },
+                    { word: 'son',         v: 'https://img.icons8.com/color/96/boy.png',         emoji: '🧒' },
+                    { word: 'daughter',    v: 'https://img.icons8.com/color/96/girl.png',        emoji: '👧' },
                 ]
             },
             days: {
@@ -293,7 +293,7 @@
                     return `<div class="card-sprite" style="background-position:-${bx}px -${by}px;"></div>`;
                 }
                 case 'img':
-                    return `<img class="card-img" src="${item.v}" alt="${item.word}" onerror="this.style.opacity=0">`;
+                    return `<img class="card-img" src="${item.v}" alt="${item.word}" onerror="this.outerHTML='<span class=\\'card-emoji\\'>${item.emoji}</span>'">`;
                 case 'badge':
                     return `<div class="card-badge" style="background:${item.color};">${item.v}</div>`;
                 default:
