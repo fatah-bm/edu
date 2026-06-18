@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Listen & Tap</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background-color: #f0f8ff;
+            margin: 0; padding: 15px;
+            text-align: center;
+            user-select: none; -webkit-user-select: none;
+        }
+        .top-bar {
+            display: flex; align-items: center;
+            max-width: 500px; margin: 0 auto 12px auto;
+        }
+        .btn-back, .btn-home {
+            border: none; border-radius: 12px; padding: 8px 14px;
+            font-family: inherit; font-size: 15px; font-weight: bold;
+            cursor: pointer; touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            text-decoration: none; color: #333;
+        }
+        .btn-back { background: #c7ceea; box-shadow: 0 4px 0 #a0a8c8; }
+        .btn-home { background: #ffd166; box-shadow: 0 4px 0 #ccaa33; }
+        .btn-back:active, .btn-home:active { transform: translateY(4px); box-shadow: none; }
+        h1 { color: #4ecdc4; font-size: 24px; margin: 0; flex: 1; }
+
+        .box {
+            background: white; border-radius: 20px; padding: 20px;
+            max-width: 500px; margin: 0 auto;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border: 4px solid #4ecdc4;
+        }
+        .box h2 { color: #555; margin-top: 0; font-size: 20px; }
+
+        .topic-btn {
+            display: block; width: 100%; padding: 14px; margin: 10px 0;
+            font-family: inherit; font-size: 20px; font-weight: bold;
+            border: none; border-radius: 14px; cursor: pointer; color: white;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+            touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+        }
+        .topic-btn:active { transform: translateY(5px); box-shadow: none; }
+
+        .scoreboard {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 14px; font-size: 16px; color: #555;
+            border-bottom: 2px dashed #eee; padding-bottom: 10px;
+        }
+        .badge { background: #eee; padding: 4px 10px; border-radius: 10px; font-size: 14px; }
+        .badge-timer { background: #ffeaa7; color: #d35400; font-weight: bold; }
+
+        .instruction { font-size: 17px; color: #666; margin: 0 0 10px; }
+        .btn-again {
+            background: #4ecdc4; color: white; border: none; border-radius: 12px;
+            padding: 8px 20px; font-family: inherit; font-size: 18px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 4px 0 #36b2aa; touch-action: manipulation;
+            margin-bottom: 16px;
+        }
+        .btn-again:active { transform: translateY(4px); box-shadow: none; }
+
+        .choices {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+            margin: 0 auto; max-width: 400px;
+        }
+        .choice-card {
+            background: white; border: 3px solid #4ecdc4; border-radius: 18px;
+            padding: 14px 8px; cursor: pointer; box-shadow: 0 5px 0 #36b2aa;
+            touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+            min-height: 110px; display: flex; align-items: center;
+            justify-content: center;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .choice-card:active { transform: translateY(5px); box-shadow: none; }
+        .choice-card.correct { border-color: #2ecc71; box-shadow: 0 5px 0 #27ae60; background: #eafaf1; }
+        .choice-card.wrong   { border-color: #e74c3c; box-shadow: 0 5px 0 #c0392b; background: #fdecea; }
+
+        .card-emoji { font-size: 62px; line-height: 1; }
+        .card-badge {
+            width: 74px; height: 74px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px; font-weight: bold; color: white; letter-spacing: 1px;
+        }
+        .card-sprite {
+            width: 64px; height: 64px;
+            background-image: url('../../../../assets/my-body.png');
+            background-size: 320px 256px;
+            background-repeat: no-repeat;
+        }
+        .card-img { width: 64px; height: 64px; object-fit: contain; }
+
+        #feedback { font-size: 22px; font-weight: bold; height: 32px; margin-top: 14px; }
+        .ok  { color: #2ecc71; }
+        .err { color: #e74c3c; }
+
+        .btn-stop {
+            display: block; width: 100%; padding: 12px; margin-top: 16px;
+            font-family: inherit; font-size: 16px; font-weight: bold;
+            border: none; border-radius: 14px; cursor: pointer;
+            background: #c7ceea; color: #333; box-shadow: 0 4px 0 #a0a8c8;
+            touch-action: manipulation;
+        }
+        .btn-stop:active { transform: translateY(4px); box-shadow: none; }
+
+        .result-score { font-size: 52px; font-weight: bold; color: #f39c12; margin: 8px 0; }
+        .result-detail { font-size: 17px; color: #666; margin: 6px 0; }
+        .btn-again-topic {
+            display: block; width: 100%; padding: 14px; margin-top: 16px;
+            font-family: inherit; font-size: 20px; font-weight: bold;
+            border: none; border-radius: 14px; cursor: pointer;
+            background: #4ecdc4; color: white; box-shadow: 0 5px 0 #36b2aa;
+            touch-action: manipulation;
+        }
+        .btn-again-topic:active { transform: translateY(5px); box-shadow: none; }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a class="btn-back" href="../">⬅ Back</a>
+        <h1>Listen & Tap</h1>
+        <a class="btn-home" href="../../../../">Home</a>
+    </div>
+
+    <div class="box" id="screen-topic">
+        <h2>Pilih Topik:</h2>
+        <button class="topic-btn" style="background:#ff6b6b; box-shadow:0 5px 0 #c0392b;" onclick="selectTopic('body')">🏃 My Body</button>
+        <button class="topic-btn" style="background:#e67e22; box-shadow:0 5px 0 #ca6f1e;" onclick="selectTopic('family')">👪 My Family</button>
+        <button class="topic-btn" style="background:#3498db; box-shadow:0 5px 0 #2176ae;" onclick="selectTopic('days')">📅 Days</button>
+        <button class="topic-btn" style="background:#9b59b6; box-shadow:0 5px 0 #7d3c98;" onclick="selectTopic('months')">📆 Months</button>
+        <button class="topic-btn" style="background:#2c3e50; box-shadow:0 5px 0 #1a252f;" onclick="selectTopic('mixed')">🎲 Mixed</button>
+    </div>
+
+    <div class="box" id="screen-game" style="display:none;">
+        <div class="scoreboard">
+            <span class="badge" id="topic-badge">-</span>
+            <span class="badge badge-timer">⏱️ <span id="time-left">120</span>s</span>
+            <span>Skor: <strong id="score">0</strong></span>
+        </div>
+        <div class="instruction">🔊 Tap the word you hear!</div>
+        <button class="btn-again" onclick="speakTarget()">🔊 Again</button>
+        <div class="choices" id="choices"></div>
+        <div id="feedback"></div>
+        <button class="btn-stop" onclick="stopGame()">⏹️ Selesai & Lihat Hasil</button>
+    </div>
+
+    <div class="box" id="screen-result" style="display:none;">
+        <h2>Waktu Habis! ⏰</h2>
+        <div class="result-score" id="final-score">0</div>
+        <div class="result-detail" id="final-correct">Benar: 0 kali</div>
+        <button class="btn-again-topic" onclick="showScreen('screen-topic')">🔄 Pilih Topik Lagi</button>
+    </div>
+
+    <script>
+        const TOPICS = {
+            body: {
+                label: 'My Body', cardType: 'sprite',
+                items: [
+                    { word: 'head',      idx: 0  }, { word: 'hair',      idx: 1  },
+                    { word: 'eyes',      idx: 2  }, { word: 'ears',      idx: 3  },
+                    { word: 'nose',      idx: 4  }, { word: 'mouth',     idx: 5  },
+                    { word: 'cheek',     idx: 6  }, { word: 'chin',      idx: 7  },
+                    { word: 'neck',      idx: 8  }, { word: 'shoulders', idx: 9  },
+                    { word: 'elbow',     idx: 10 }, { word: 'fingers',   idx: 11 },
+                    { word: 'hands',     idx: 12 }, { word: 'stomach',   idx: 13 },
+                    { word: 'knees',     idx: 14 }, { word: 'legs',      idx: 15 },
+                    { word: 'toes',      idx: 16 }, { word: 'feet',      idx: 17 },
+                    { word: 'foot',      idx: 18 },
+                ]
+            },
+            family: {
+                label: 'My Family', cardType: 'img',
+                items: [
+                    { word: 'father',      v: 'https://img.icons8.com/color/96/father.png' },
+                    { word: 'mother',      v: 'https://img.icons8.com/color/96/mother.png' },
+                    { word: 'brother',     v: 'https://img.icons8.com/color/96/brother.png' },
+                    { word: 'sister',      v: 'https://img.icons8.com/color/96/sister.png' },
+                    { word: 'grandfather', v: 'https://img.icons8.com/color/96/grandfather.png' },
+                    { word: 'grandmother', v: 'https://img.icons8.com/color/96/grandmother.png' },
+                    { word: 'baby',        v: 'https://img.icons8.com/color/96/baby.png' },
+                    { word: 'son',         v: 'https://img.icons8.com/color/96/boy.png' },
+                    { word: 'daughter',    v: 'https://img.icons8.com/color/96/girl.png' },
+                ]
+            },
+            days: {
+                label: 'Days', cardType: 'badge',
+                items: [
+                    { word: 'Sunday',    v: 'SUN', color: '#ff6b6b' },
+                    { word: 'Monday',    v: 'MON', color: '#ffa552' },
+                    { word: 'Tuesday',   v: 'TUE', color: '#f1c40f' },
+                    { word: 'Wednesday', v: 'WED', color: '#2ecc71' },
+                    { word: 'Thursday',  v: 'THU', color: '#4ecdc4' },
+                    { word: 'Friday',    v: 'FRI', color: '#3498db' },
+                    { word: 'Saturday',  v: 'SAT', color: '#9b59b6' },
+                ]
+            },
+            months: {
+                label: 'Months', cardType: 'badge',
+                items: [
+                    { word: 'January',   v: 'JAN', color: '#74b9ff' },
+                    { word: 'February',  v: 'FEB', color: '#a29bfe' },
+                    { word: 'March',     v: 'MAR', color: '#00b894' },
+                    { word: 'April',     v: 'APR', color: '#81ecec' },
+                    { word: 'May',       v: 'MAY', color: '#2ecc71' },
+                    { word: 'June',      v: 'JUN', color: '#f1c40f' },
+                    { word: 'July',      v: 'JUL', color: '#ff9f43' },
+                    { word: 'August',    v: 'AUG', color: '#ff6b6b' },
+                    { word: 'September', v: 'SEP', color: '#e17055' },
+                    { word: 'October',   v: 'OCT', color: '#d35400' },
+                    { word: 'November',  v: 'NOV', color: '#636e72' },
+                    { word: 'December',  v: 'DEC', color: '#0984e3' },
+                ]
+            }
+        };
+        const TOPIC_KEYS = ['body', 'family', 'days', 'months'];
+
+        let currentTopicKey   = null;
+        let activeQuestionTopic = null;
+        let targetItem        = null;
+        let score             = 0;
+        let correctCount      = 0;
+        let timeLeft          = 120;
+        let timerInterval     = null;
+        let isProcessing      = false;
+        let audioCtx          = null;
+
+        function showScreen(id) {
+            ['screen-topic','screen-game','screen-result'].forEach(s =>
+                document.getElementById(s).style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function selectTopic(key) {
+            currentTopicKey = key;
+            score = 0; correctCount = 0;
+            document.getElementById('score').innerText = 0;
+            document.getElementById('topic-badge').innerText =
+                key === 'mixed' ? '🎲 Mixed' : TOPICS[key].label;
+            showScreen('screen-game');
+            startTimer();
+            generateQuestion();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 120;
+            document.getElementById('time-left').innerText = timeLeft;
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('time-left').innerText = timeLeft;
+                if (timeLeft <= 0) { clearInterval(timerInterval); finishGame(); }
+            }, 1000);
+        }
+
+        function stopGame() {
+            clearInterval(timerInterval);
+            window.speechSynthesis.cancel();
+            finishGame();
+        }
+
+        function generateQuestion() {
+            isProcessing = false;
+            document.getElementById('feedback').innerText = '';
+
+            // For mixed: pick a random topic each question
+            if (currentTopicKey === 'mixed') {
+                const key = TOPIC_KEYS[Math.floor(Math.random() * TOPIC_KEYS.length)];
+                activeQuestionTopic = TOPICS[key];
+            } else {
+                activeQuestionTopic = TOPICS[currentTopicKey];
+            }
+
+            const pool = [...activeQuestionTopic.items].sort(() => Math.random() - 0.5);
+            targetItem = pool[0];
+            const choices = pool.slice(0, 4).sort(() => Math.random() - 0.5);
+
+            document.getElementById('choices').innerHTML = choices.map(item => `
+                <div class="choice-card" onclick="checkAnswer(this,'${item.word}')">
+                    ${renderVisual(item, activeQuestionTopic)}
+                </div>`).join('');
+
+            setTimeout(speakTarget, 350);
+        }
+
+        function renderVisual(item, topic) {
+            switch (topic.cardType) {
+                case 'sprite': {
+                    const bx = (item.idx % 5) * 64;
+                    const by = Math.floor(item.idx / 5) * 64;
+                    return `<div class="card-sprite" style="background-position:-${bx}px -${by}px;"></div>`;
+                }
+                case 'img':
+                    return `<img class="card-img" src="${item.v}" alt="${item.word}" onerror="this.style.opacity=0">`;
+                case 'badge':
+                    return `<div class="card-badge" style="background:${item.color};">${item.v}</div>`;
+                default:
+                    return `<span class="card-emoji">${item.v}</span>`;
+            }
+        }
+
+        function speakTarget() {
+            if (!targetItem) return;
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(targetItem.word);
+            u.lang = 'en-US'; u.rate = 0.85; u.pitch = 1.2;
+            window.speechSynthesis.speak(u);
+        }
+
+        function checkAnswer(el, word) {
+            if (isProcessing) return;
+            isProcessing = true;
+            const fb = document.getElementById('feedback');
+            if (word === targetItem.word) {
+                playSfx('correct');
+                el.classList.add('correct');
+                fb.innerHTML = '<span class="ok">Benar! 🎉</span>';
+                score += 10; correctCount++;
+                document.getElementById('score').innerText = score;
+                setTimeout(() => { if (timeLeft > 0) generateQuestion(); }, 700);
+            } else {
+                playSfx('wrong');
+                el.classList.add('wrong');
+                fb.innerHTML = '<span class="err">Coba lagi! 🤔</span>';
+                if (score > 0) score = Math.max(0, score - 5);
+                document.getElementById('score').innerText = score;
+                setTimeout(() => {
+                    el.classList.remove('wrong');
+                    fb.innerText = '';
+                    isProcessing = false;
+                    speakTarget();
+                }, 900);
+            }
+        }
+
+        function finishGame() {
+            window.speechSynthesis.cancel();
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('final-correct').innerText = `Jawaban benar: ${correctCount} kali`;
+            showScreen('screen-result');
+        }
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+        function playSfx(type) {
+            initAudio();
+            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.connect(g); g.connect(audioCtx.destination);
+            if (type === 'correct') {
+                o.type = 'sine';
+                o.frequency.setValueAtTime(600, audioCtx.currentTime);
+                o.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
+                g.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            } else {
+                o.type = 'sawtooth';
+                o.frequency.setValueAtTime(300, audioCtx.currentTime);
+                o.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+                g.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            }
+            o.start(); o.stop(audioCtx.currentTime + 0.3);
+        }
+    </script>
+</body>
+</html>
