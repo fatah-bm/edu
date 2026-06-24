@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nilai Tempat</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background: #f0f8ff;
+            margin: 0;
+            padding: 16px;
+            text-align: center;
+            min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* ── Top bar ── */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            max-width: 500px;
+            margin: 0 auto 12px auto;
+            gap: 8px;
+        }
+        .btn-nav {
+            background: #c7ceea;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #a0a8c8;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            text-decoration: none;
+            color: #333;
+            display: inline-block;
+        }
+        .btn-nav:active { transform: translateY(4px); box-shadow: none; }
+        h1 { color: #ff6b6b; font-size: 24px; margin: 0; flex: 1; }
+
+        /* ── Card box ── */
+        .box {
+            background: white;
+            border-radius: 20px;
+            padding: 22px 18px;
+            max-width: 500px;
+            margin: 0 auto 14px auto;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+        }
+        .box-title { color: #2c3e50; font-size: 18px; margin: 0 0 18px 0; }
+
+        /* ── Level buttons ── */
+        .btn-level {
+            display: block;
+            width: 100%;
+            padding: 14px 18px;
+            font-family: inherit;
+            font-size: 19px;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            color: white;
+            text-align: left;
+        }
+        .btn-level small {
+            display: block;
+            font-size: 12px;
+            font-weight: normal;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+        .btn-level:active { transform: translateY(5px); }
+        .btn-mudah  { background: #2ecc71; box-shadow: 0 5px 0 #1ea359; }
+        .btn-mudah:active  { box-shadow: none; }
+        .btn-sedang { background: #f39c12; box-shadow: 0 5px 0 #c57d0e; }
+        .btn-sedang:active { box-shadow: none; }
+        .btn-sulit  { background: #e74c3c; box-shadow: 0 5px 0 #b73d30; }
+        .btn-sulit:active  { box-shadow: none; }
+
+        /* ── Score bar ── */
+        #score-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 500px;
+            margin: 0 auto 10px auto;
+            font-size: 15px;
+            color: #666;
+            font-weight: bold;
+            padding: 0 4px;
+        }
+        #score-display { color: #ff6b6b; font-size: 18px; }
+
+        /* ── Speak button ── */
+        .btn-speak {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 11px 28px;
+            font-family: inherit;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #2471a3;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            margin-bottom: 16px;
+        }
+        .btn-speak:active { transform: translateY(5px); box-shadow: none; }
+
+        .game-instruction { font-size: 14px; color: #999; margin: 0 0 14px 0; }
+
+        /* ── Place value table ── */
+        .pv-table {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .pv-col { display: flex; flex-direction: column; align-items: center; }
+
+        .pv-label {
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            border-radius: 8px 8px 0 0;
+            padding: 5px 0;
+            width: 84px;
+        }
+        .pv-label.r { background: #e74c3c; }
+        .pv-label.p { background: #f39c12; }
+        .pv-label.s { background: #27ae60; }
+
+        .pv-box {
+            width: 84px;
+            height: 80px;
+            border-width: 3px;
+            border-style: dashed;
+            border-radius: 0 0 10px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 44px;
+            font-weight: bold;
+            color: #2c3e50;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .pv-box.r { border-color: #e74c3c; background: #fdf0ef; }
+        .pv-box.p { border-color: #f39c12; background: #fef9ef; }
+        .pv-box.s { border-color: #27ae60; background: #edfaf3; }
+        .pv-box.filled { border-style: solid; }
+        .pv-box.correct { border-color: #27ae60 !important; background: #d5f5e3 !important; border-width: 4px !important; border-style: solid !important; }
+        .pv-box.wrong   { border-color: #e74c3c !important; background: #fde8e8 !important; border-width: 4px !important; border-style: solid !important; }
+
+        /* ── Feedback ── */
+        #feedback {
+            font-size: 20px;
+            font-weight: bold;
+            min-height: 28px;
+            margin-bottom: 14px;
+        }
+        #feedback.correct { color: #27ae60; }
+        #feedback.wrong   { color: #e74c3c; }
+
+        /* ── Digit tray ── */
+        .tray-label { font-size: 13px; color: #aaa; margin-bottom: 8px; }
+        .digit-tray {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 7px;
+            margin-bottom: 18px;
+        }
+        .digit-card {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            cursor: grab;
+            box-shadow: 0 4px 0 #bbb;
+            touch-action: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .digit-card.dragging-origin {
+            opacity: 0.4;
+        }
+        .digit-ghost {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            width: 50px;
+            height: 50px;
+            background: #ffd166;
+            border: 3px solid #e6a800;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            transform: scale(1.15);
+        }
+
+        /* ── Check button ── */
+        .btn-check {
+            width: 100%;
+            padding: 15px;
+            font-family: inherit;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            background: #2ecc71;
+            color: white;
+            box-shadow: 0 5px 0 #1ea359;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-check:active:not(:disabled) { transform: translateY(5px); box-shadow: none; }
+        .btn-check:disabled {
+            background: #bdc3c7;
+            box-shadow: 0 5px 0 #95a5a6;
+            cursor: default;
+        }
+
+        /* ── Result screen ── */
+        .result-score { font-size: 64px; font-weight: bold; color: #ff6b6b; line-height: 1; margin-bottom: 4px; }
+        .result-label { font-size: 13px; color: #aaa; margin-bottom: 6px; }
+        .result-summary { font-size: 17px; color: #555; margin-bottom: 18px; }
+        .review-list { text-align: left; margin-bottom: 20px; }
+        .review-item {
+            padding: 9px 12px;
+            font-size: 14px;
+            border-bottom: 1px solid #eee;
+            border-left: 5px solid #ccc;
+            margin-bottom: 4px;
+            border-radius: 0 8px 8px 0;
+        }
+        .review-item.ok    { border-left-color: #27ae60; }
+        .review-item.retry { border-left-color: #f39c12; background: #fefbf0; }
+        .btn-again {
+            width: 100%;
+            padding: 15px;
+            font-family: inherit;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            background: #ff6b6b;
+            color: white;
+            box-shadow: 0 5px 0 #cc4444;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-again:active { transform: translateY(5px); box-shadow: none; }
+    </style>
+</head>
+<body>
+
+<!-- ════════ Screen: Level ════════ -->
+<div id="screen-level" class="screen active">
+    <div class="top-bar">
+        <a class="btn-nav" href="../">⬅ Back</a>
+        <h1>Nilai Tempat</h1>
+    </div>
+    <div class="box">
+        <p class="box-title">Pilih level:</p>
+        <button class="btn-level btn-mudah" onclick="selectLevel('mudah')">
+            😊 Mudah
+            <small>Angka 1–9 &nbsp;·&nbsp; Satuan saja</small>
+        </button>
+        <button class="btn-level btn-sedang" onclick="selectLevel('sedang')">
+            🤔 Sedang
+            <small>Angka 10–99 &nbsp;·&nbsp; Puluhan &amp; Satuan</small>
+        </button>
+        <button class="btn-level btn-sulit" onclick="selectLevel('sulit')">
+            😤 Sulit
+            <small>Angka 100–999 &nbsp;·&nbsp; Ratusan, Puluhan &amp; Satuan</small>
+        </button>
+    </div>
+</div>
+
+<!-- ════════ Screen: Game ════════ -->
+<div id="screen-game" class="screen">
+    <div class="top-bar">
+        <button class="btn-nav" onclick="showScreen('screen-level')">⬅ Back</button>
+        <h1>Nilai Tempat</h1>
+    </div>
+    <div id="score-bar">
+        <span>Soal <span id="q-num">1</span>/10</span>
+        <span>Skor: <span id="score-display">0</span></span>
+    </div>
+    <div class="box">
+        <button class="btn-speak" onclick="speakAgain()">🔊 Dengar lagi</button>
+        <p class="game-instruction">Susun angkanya ke kotak yang tepat!</p>
+        <div class="pv-table" id="pv-table"></div>
+        <div id="feedback"></div>
+        <p class="tray-label">Pilih angka:</p>
+        <div class="digit-tray" id="digit-tray"></div>
+        <button class="btn-check" id="btn-check" onclick="checkAnswer()" disabled>
+            ✓ Cek Jawaban
+        </button>
+    </div>
+</div>
+
+<!-- ════════ Screen: Result ════════ -->
+<div id="screen-result" class="screen">
+    <div class="top-bar">
+        <a class="btn-nav" href="../">⬅ Back</a>
+        <h1>Hasil</h1>
+    </div>
+    <div class="box">
+        <div class="result-score" id="final-score">0</div>
+        <p class="result-label">poin</p>
+        <p class="result-summary" id="result-summary"></p>
+        <div class="review-list" id="review-list"></div>
+        <button class="btn-again" onclick="showScreen('screen-level')">🔄 Main Lagi</button>
+    </div>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentLevel = '';
+let score = 0;
+let questionNum = 0;
+let answerBoxes = {};   // { S: null|0-9, P: null|0-9, R: null|0-9 }
+let lockedBoxes = {};   // positions confirmed correct (stay locked on retry)
+let currentQ = {};      // { number, digits:{R,P,S}, mistakes, solved }
+let gameHistory = [];
+let isChecking = false;
+
+// ── Drag state ────────────────────────────────────────────────────────────────
+let dragDigit = null;
+let dragGhost = null;
+let dragOriginCard = null;
+
+document.addEventListener('pointermove', e => {
+    if (!dragGhost) return;
+    dragGhost.style.left = (e.clientX - 25) + 'px';
+    dragGhost.style.top  = (e.clientY - 25) + 'px';
+});
+
+document.addEventListener('pointerup', e => {
+    if (!dragGhost) return;
+    dragGhost.remove();
+    dragGhost = null;
+    if (dragOriginCard) { dragOriginCard.classList.remove('dragging-origin'); dragOriginCard = null; }
+
+    if (dragDigit === null || isChecking) { dragDigit = null; return; }
+
+    // Find element under drop point (ghost is pointer-events:none so won't block)
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const boxEl = el && el.closest('[id^="box-"]');
+    if (boxEl) {
+        const pos = boxEl.id.replace('box-', '');
+        if (!lockedBoxes[pos]) {
+            answerBoxes[pos] = dragDigit;
+            refreshBox(pos);
+            updateCheckButton();
+        }
+    }
+    dragDigit = null;
+});
+
+document.addEventListener('pointercancel', () => {
+    if (dragGhost) { dragGhost.remove(); dragGhost = null; }
+    if (dragOriginCard) { dragOriginCard.classList.remove('dragging-origin'); dragOriginCard = null; }
+    dragDigit = null;
+});
+
+// ── Screens ───────────────────────────────────────────────────────────────────
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+}
+
+// ── Number helpers ────────────────────────────────────────────────────────────
+const ONES = ['','satu','dua','tiga','empat','lima','enam','tujuh','delapan','sembilan'];
+
+function numberToWords(n) {
+    if (n === 0) return 'nol';
+    if (n < 10) return ONES[n];
+    if (n === 10) return 'sepuluh';
+    if (n < 20) return ONES[n - 10] + ' belas';
+    if (n < 100) {
+        const p = Math.floor(n / 10), s = n % 10;
+        return ONES[p] + ' puluh' + (s ? ' ' + ONES[s] : '');
+    }
+    const r = Math.floor(n / 100), rest = n % 100;
+    const hundreds = r === 1 ? 'seratus' : ONES[r] + ' ratus';
+    return hundreds + (rest ? ' ' + numberToWords(rest) : '');
+}
+
+function getDigits(n) {
+    return { R: Math.floor(n / 100), P: Math.floor((n % 100) / 10), S: n % 10 };
+}
+
+function getPositions() {
+    if (currentLevel === 'mudah')  return ['S'];
+    if (currentLevel === 'sedang') return ['P', 'S'];
+    return ['R', 'P', 'S'];
+}
+
+function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// ── Game flow ─────────────────────────────────────────────────────────────────
+function selectLevel(lvl) {
+    currentLevel = lvl;
+    score = 0;
+    questionNum = 0;
+    gameHistory = [];
+    showScreen('screen-game');
+    generateQuestion();
+}
+
+function generateQuestion() {
+    if (questionNum >= 10) { finishGame(); return; }
+    questionNum++;
+    isChecking = false;
+
+    let num;
+    if (currentLevel === 'mudah')       num = randInt(1, 9);
+    else if (currentLevel === 'sedang') num = randInt(10, 99);
+    else                                num = randInt(100, 999);
+
+    currentQ = { number: num, digits: getDigits(num), mistakes: 0, solved: false };
+
+    answerBoxes = {};
+    lockedBoxes = {};
+    getPositions().forEach(p => { answerBoxes[p] = null; });
+
+    updateScoreBar();
+    renderPVTable();
+    renderDigitTray();
+    clearFeedback();
+    updateCheckButton();
+    speakNumber(num);
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+const PV_LABELS = { R: 'Ratusan', P: 'Puluhan', S: 'Satuan' };
+const PV_CLS    = { R: 'r',       P: 'p',       S: 's' };
+
+function renderPVTable() {
+    const container = document.getElementById('pv-table');
+    container.innerHTML = '';
+    getPositions().forEach(pos => {
+        const col = document.createElement('div');
+        col.className = 'pv-col';
+
+        const lbl = document.createElement('div');
+        lbl.className = 'pv-label ' + PV_CLS[pos];
+        lbl.textContent = PV_LABELS[pos];
+
+        const box = document.createElement('div');
+        box.className = 'pv-box ' + PV_CLS[pos];
+        box.id = 'box-' + pos;
+        // tap on a filled, unlocked box clears it
+        box.addEventListener('pointerdown', e => {
+            if (dragDigit !== null || isChecking || lockedBoxes[pos]) return;
+            answerBoxes[pos] = null;
+            refreshBox(pos);
+            updateCheckButton();
+            e.preventDefault();
+        });
+
+        col.appendChild(lbl);
+        col.appendChild(box);
+        container.appendChild(col);
+    });
+}
+
+function refreshBox(pos) {
+    const box = document.getElementById('box-' + pos);
+    if (!box) return;
+    const val = answerBoxes[pos];
+    box.className = 'pv-box ' + PV_CLS[pos] + (val !== null ? ' filled' : '');
+    box.textContent = val !== null ? val : '';
+}
+
+function renderDigitTray() {
+    const tray = document.getElementById('digit-tray');
+    tray.innerHTML = '';
+    for (let d = 0; d <= 9; d++) {
+        const card = document.createElement('div');
+        card.className = 'digit-card';
+        card.id = 'digit-' + d;
+        card.textContent = d;
+        card.addEventListener('pointerdown', e => {
+            if (isChecking) return;
+            dragDigit = d;
+            dragOriginCard = card;
+            card.classList.add('dragging-origin');
+            dragGhost = document.createElement('div');
+            dragGhost.className = 'digit-ghost';
+            dragGhost.textContent = d;
+            dragGhost.style.left = (e.clientX - 25) + 'px';
+            dragGhost.style.top  = (e.clientY - 25) + 'px';
+            document.body.appendChild(dragGhost);
+            e.preventDefault();
+        });
+        tray.appendChild(card);
+    }
+}
+
+function updateCheckButton() {
+    const positions = getPositions();
+    const allFilled = positions.every(p => lockedBoxes[p] || answerBoxes[p] !== null);
+    document.getElementById('btn-check').disabled = !allFilled;
+}
+
+// ── Check answer ──────────────────────────────────────────────────────────────
+function checkAnswer() {
+    if (isChecking) return;
+    isChecking = true;
+
+    const positions = getPositions();
+    let allCorrect = true;
+
+    positions.forEach(pos => {
+        if (lockedBoxes[pos]) return;
+        const box = document.getElementById('box-' + pos);
+        if (answerBoxes[pos] === currentQ.digits[pos]) {
+            box.className = 'pv-box correct';
+            box.textContent = answerBoxes[pos];
+            lockedBoxes[pos] = true;
+        } else {
+            box.className = 'pv-box wrong';
+            box.textContent = answerBoxes[pos];
+            allCorrect = false;
+        }
+    });
+
+    if (allCorrect) {
+        score += 10;
+        currentQ.solved = true;
+        setFeedback('Benar! 🎉', 'correct');
+        playSfx('correct');
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+        updateScoreBar();
+        gameHistory.push({ number: currentQ.number, mistakes: currentQ.mistakes });
+        setTimeout(generateQuestion, 1200);
+    } else {
+        currentQ.mistakes++;
+        score = Math.max(0, score - 5);
+        setFeedback('Coba lagi! 🤔', 'wrong');
+        playSfx('wrong');
+        updateScoreBar();
+        setTimeout(() => {
+            positions.forEach(pos => {
+                if (lockedBoxes[pos]) return;
+                answerBoxes[pos] = null;
+                refreshBox(pos);
+            });
+            clearFeedback();
+            isChecking = false;
+            updateCheckButton();
+        }, 1500);
+    }
+}
+
+// ── Feedback & score bar ──────────────────────────────────────────────────────
+function setFeedback(msg, cls) {
+    const el = document.getElementById('feedback');
+    el.textContent = msg;
+    el.className = cls;
+}
+function clearFeedback() {
+    const el = document.getElementById('feedback');
+    el.textContent = '';
+    el.className = '';
+}
+function updateScoreBar() {
+    document.getElementById('q-num').textContent = questionNum;
+    document.getElementById('score-display').textContent = score;
+}
+
+// ── Speech ────────────────────────────────────────────────────────────────────
+let _idVoice = null;
+
+function _loadIdVoice() {
+    const voices = window.speechSynthesis.getVoices();
+    _idVoice = voices.find(v => v.lang === 'id-ID') ||
+               voices.find(v => v.lang.startsWith('id')) ||
+               null;
+}
+
+// Voices load asynchronously on first page load
+if (window.speechSynthesis.onvoiceschanged !== undefined) {
+    window.speechSynthesis.onvoiceschanged = _loadIdVoice;
+}
+_loadIdVoice();
+
+function speakNumber(n) {
+    const text = numberToWords(n);
+    function doSpeak() {
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'id-ID';
+        utter.rate = 0.85;
+        utter.pitch = 1.1;
+        if (_idVoice) utter.voice = _idVoice;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utter);
+    }
+    // If voices haven't loaded yet, wait for them
+    if (!_idVoice && window.speechSynthesis.getVoices().length === 0) {
+        const prev = window.speechSynthesis.onvoiceschanged;
+        window.speechSynthesis.onvoiceschanged = () => {
+            _loadIdVoice();
+            window.speechSynthesis.onvoiceschanged = prev || null;
+            doSpeak();
+        };
+    } else {
+        doSpeak();
+    }
+}
+function speakAgain() {
+    if (currentQ.number !== undefined) speakNumber(currentQ.number);
+}
+
+// ── SFX ───────────────────────────────────────────────────────────────────────
+function playSfx(type) {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        if (type === 'correct') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(1000, ctx.currentTime + 0.3);
+        } else {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(300, ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.3);
+        }
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.3);
+    } catch (e) {}
+}
+
+// ── Result ────────────────────────────────────────────────────────────────────
+function finishGame() {
+    document.getElementById('final-score').textContent = score;
+    const perfect = gameHistory.filter(h => h.mistakes === 0).length;
+    const withRetry = gameHistory.filter(h => h.mistakes > 0).length;
+    document.getElementById('result-summary').textContent =
+        `✅ ${perfect} sempurna   ⚠️ ${withRetry} setelah dicoba`;
+
+    const list = document.getElementById('review-list');
+    list.innerHTML = '';
+    gameHistory.forEach((h, i) => {
+        const item = document.createElement('div');
+        const isPerfect = h.mistakes === 0;
+        item.className = 'review-item ' + (isPerfect ? 'ok' : 'retry');
+        item.innerHTML =
+            `<b>${i + 1}.</b> ${isPerfect ? '✅' : '⚠️'} <b>${h.number}</b> — ` +
+            `<i>${numberToWords(h.number)}</i>` +
+            (h.mistakes > 0
+                ? ` <span style="color:#e67e22;font-size:12px">(salah ${h.mistakes}×)</span>`
+                : '');
+        list.appendChild(item);
+    });
+
+    showScreen('screen-result');
+}
+</script>
+</body>
+</html>
