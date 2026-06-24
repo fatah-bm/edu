@@ -295,11 +295,11 @@
         <p class="box-title">Pilih level:</p>
         <button class="btn-level btn-mudah" onclick="selectLevel('mudah')">
             😊 Mudah
-            <small>Angka 1–9 &nbsp;·&nbsp; Satuan saja</small>
+            <small>Angka 1–20 &nbsp;·&nbsp; Satuan &amp; Puluhan</small>
         </button>
         <button class="btn-level btn-sedang" onclick="selectLevel('sedang')">
             🤔 Sedang
-            <small>Angka 10–99 &nbsp;·&nbsp; Puluhan &amp; Satuan</small>
+            <small>Angka 21–99 &nbsp;·&nbsp; Puluhan &amp; Satuan</small>
         </button>
         <button class="btn-level btn-sulit" onclick="selectLevel('sulit')">
             😤 Sulit
@@ -426,8 +426,9 @@ function getDigits(n) {
 }
 
 function getPositions() {
-    if (currentLevel === 'mudah')  return ['S'];
-    if (currentLevel === 'sedang') return ['P', 'S'];
+    const n = currentQ.number || 0;
+    if (n < 10)  return ['S'];
+    if (n < 100) return ['P', 'S'];
     return ['R', 'P', 'S'];
 }
 
@@ -451,8 +452,8 @@ function generateQuestion() {
     isChecking = false;
 
     let num;
-    if (currentLevel === 'mudah')       num = randInt(1, 9);
-    else if (currentLevel === 'sedang') num = randInt(10, 99);
+    if (currentLevel === 'mudah')       num = randInt(1, 20);
+    else if (currentLevel === 'sedang') num = randInt(21, 99);
     else                                num = randInt(100, 999);
 
     currentQ = { number: num, digits: getDigits(num), mistakes: 0, solved: false };
