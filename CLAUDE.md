@@ -90,6 +90,29 @@ games/english/words/
 
 ---
 
+## Game: `games/math/nilai-tempat`
+
+Game drag-and-drop nilai tempat untuk anak SD kelas 1-2. Suara mengucapkan angka dalam bahasa Indonesia, anak mendrag kartu digit 0–9 ke kotak Ratusan/Puluhan/Satuan yang tepat.
+
+**Flow layar:** `screen-level` → `screen-game` → `screen-result`
+
+**Level & range angka:**
+- `'mudah'`: 1–20 — kotak Satuan saja (1–9) atau Puluhan+Satuan (10–20)
+- `'sedang'`: 21–99 — kotak Puluhan + Satuan
+- `'sulit'`: 100–999 — kotak Ratusan + Puluhan + Satuan
+
+Jumlah kotak ditentukan otomatis oleh jumlah digit angka (`getPositions()` baca `currentQ.number`), bukan dari level.
+
+**Interaksi:** drag kartu digit dari tray → lepas di atas kotak posisi. Tap kotak yang sudah terisi → kosongkan. Implementasi via Pointer Events (`pointerdown`/`pointermove`/`pointerup`) agar bekerja di mouse & touchscreen.
+
+**Speech:** `numberToWords(n)` mengubah angka ke kata Indonesia ("sebelas", "dua puluh tiga", "seratus lima belas"), diucapkan via Web Speech API (`lang: 'id-ID'`, `rate: 0.85`). Voice Indonesia dipilih eksplisit dari `speechSynthesis.getVoices()`.
+
+**Scoring:** +10 benar, -5 salah (minimum 0). Kotak yang benar dikunci (`lockedBoxes`), kotak salah direset untuk dicoba ulang. 10 soal per sesi.
+
+**Dependensi eksternal:** `canvas-confetti` (CDN jsdelivr). Semua CSS & JS inline dalam satu `index.html`.
+
+---
+
 ## Game: `games/math/tambahkali`
 
 Game pilihan ganda matematika (penjumlahan & perkalian) untuk anak SD.
