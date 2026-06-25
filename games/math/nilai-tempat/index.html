@@ -89,6 +89,31 @@
         .btn-sedang:active { box-shadow: none; }
         .btn-sulit  { background: #e74c3c; box-shadow: 0 5px 0 #b73d30; }
         .btn-sulit:active  { box-shadow: none; }
+        .btn-santai { background: #3498db; box-shadow: 0 5px 0 #2471a3; }
+        .btn-santai:active { box-shadow: none; }
+        .btn-soal10 { background: #e67e22; box-shadow: 0 5px 0 #c0611a; }
+        .btn-soal10:active { box-shadow: none; }
+
+        /* ── Selesai button (mode santai only) ── */
+        .btn-selesai {
+            display: none;
+            width: 100%;
+            padding: 12px;
+            font-family: inherit;
+            font-size: 17px;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            background: #95a5a6;
+            color: white;
+            box-shadow: 0 4px 0 #7f8c8d;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            margin-top: 10px;
+        }
+        .btn-selesai:active { transform: translateY(4px); box-shadow: none; }
+        #screen-game.mode-santai .btn-selesai { display: block; }
 
         /* ── Score bar ── */
         #score-bar {
@@ -285,10 +310,29 @@
 </head>
 <body>
 
-<!-- ════════ Screen: Level ════════ -->
-<div id="screen-level" class="screen active">
+<!-- ════════ Screen: Mode ════════ -->
+<div id="screen-mode" class="screen active">
     <div class="top-bar">
         <a class="btn-nav" href="../">⬅ Back</a>
+        <h1>Nilai Tempat</h1>
+    </div>
+    <div class="box">
+        <p class="box-title">Pilih mode:</p>
+        <button class="btn-level btn-santai" onclick="selectMode('santai')">
+            🌤️ Santai
+            <small>Latihan bebas, selesai kapan saja</small>
+        </button>
+        <button class="btn-level btn-soal10" onclick="selectMode('soal10')">
+            🎯 10 Soal
+            <small>Tepat 10 soal lalu lihat hasilnya</small>
+        </button>
+    </div>
+</div>
+
+<!-- ════════ Screen: Level ════════ -->
+<div id="screen-level" class="screen">
+    <div class="top-bar">
+        <button class="btn-nav" onclick="showScreen('screen-mode')">⬅ Back</button>
         <h1>Nilai Tempat</h1>
     </div>
     <div class="box">
@@ -315,7 +359,7 @@
         <h1>Nilai Tempat</h1>
     </div>
     <div id="score-bar">
-        <span>Soal <span id="q-num">1</span>/10</span>
+        <span id="q-progress">Soal 1</span>
         <span>Skor: <span id="score-display">0</span></span>
     </div>
     <div class="box">
@@ -328,6 +372,7 @@
         <button class="btn-check" id="btn-check" onclick="checkAnswer()" disabled>
             ✓ Cek Jawaban
         </button>
+        <button class="btn-selesai" onclick="finishGame()">⏹ Selesai &amp; Lihat Hasil</button>
     </div>
 </div>
 
@@ -342,13 +387,14 @@
         <p class="result-label">poin</p>
         <p class="result-summary" id="result-summary"></p>
         <div class="review-list" id="review-list"></div>
-        <button class="btn-again" onclick="showScreen('screen-level')">🔄 Main Lagi</button>
+        <button class="btn-again" onclick="showScreen('screen-mode')">🔄 Main Lagi</button>
     </div>
 </div>
 
 <script>
 // ── State ─────────────────────────────────────────────────────────────────────
 let currentLevel = '';
+let gameMode = '';   // 'santai' | 'soal10'
 let score = 0;
 let questionNum = 0;
 let answerBoxes = {};   // { S: null|0-9, P: null|0-9, R: null|0-9 }
@@ -437,17 +483,24 @@ function randInt(min, max) {
 }
 
 // ── Game flow ─────────────────────────────────────────────────────────────────
+function selectMode(mode) {
+    gameMode = mode;
+    showScreen('screen-level');
+}
+
 function selectLevel(lvl) {
     currentLevel = lvl;
     score = 0;
     questionNum = 0;
     gameHistory = [];
+    const gameScreen = document.getElementById('screen-game');
+    gameScreen.classList.toggle('mode-santai', gameMode === 'santai');
     showScreen('screen-game');
     generateQuestion();
 }
 
 function generateQuestion() {
-    if (questionNum >= 10) { finishGame(); return; }
+    if (gameMode === 'soal10' && questionNum >= 10) { finishGame(); return; }
     questionNum++;
     isChecking = false;
 
@@ -604,7 +657,8 @@ function clearFeedback() {
     el.className = '';
 }
 function updateScoreBar() {
-    document.getElementById('q-num').textContent = questionNum;
+    const progress = gameMode === 'soal10' ? `Soal ${questionNum}/10` : `Soal ${questionNum}`;
+    document.getElementById('q-progress').textContent = progress;
     document.getElementById('score-display').textContent = score;
 }
 
