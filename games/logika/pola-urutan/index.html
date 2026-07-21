@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pola & Urutan</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e8f4f8 100%);
+            margin: 0;
+            padding: 16px;
+            text-align: center;
+            min-height: 100vh;
+        }
+        .top-bar {
+            display: flex;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto 20px auto;
+        }
+        .btn-back {
+            background-color: #c7ceea;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #a0a8c8;
+            text-decoration: none;
+            color: #333;
+        }
+        .btn-back:active { transform: translateY(4px); box-shadow: none; }
+        h1 {
+            color: #9b59b6;
+            font-size: 28px;
+            margin: 0;
+            flex: 1;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        .question {
+            font-size: 18px;
+            color: #2c3e50;
+            margin: 0 0 24px 0;
+            font-weight: bold;
+        }
+        .pattern-display {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+            margin: 24px 0;
+            flex-wrap: wrap;
+        }
+        .pattern-item {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            font-weight: bold;
+            border: 3px solid #9b59b6;
+            background: white;
+        }
+        .pattern-item.question-mark {
+            background: #fff3cd;
+            border-style: dashed;
+        }
+        .question-mark-text {
+            font-size: 24px;
+            color: #ff9800;
+        }
+        .separator {
+            font-size: 24px;
+            color: #999;
+            font-weight: bold;
+        }
+        .options {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 24px 0;
+        }
+        .option-btn {
+            width: 70px;
+            height: 70px;
+            border: 3px solid #9b59b6;
+            border-radius: 12px;
+            background: white;
+            font-size: 28px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #7a3f88;
+        }
+        .option-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #7a3f88;
+        }
+        .option-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        .option-btn.correct {
+            background: #4caf50;
+            border-color: #4caf50;
+            color: white;
+            animation: pulse 0.6s;
+        }
+        .option-btn.wrong {
+            background: #f44336;
+            border-color: #f44336;
+            color: white;
+            animation: shake 0.6s;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        .feedback {
+            font-size: 20px;
+            margin: 16px 0;
+            font-weight: bold;
+            height: 30px;
+        }
+        .feedback.correct { color: #4caf50; }
+        .feedback.wrong { color: #f44336; }
+        .score {
+            font-size: 16px;
+            color: #666;
+            margin: 16px 0;
+        }
+        .btn-next {
+            background-color: #9b59b6;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #7a3f88;
+            color: white;
+            margin: 16px 0;
+        }
+        .btn-next:active { transform: translateY(4px); box-shadow: none; }
+        .btn-next:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            box-shadow: 0 4px 0 #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a class="btn-back" href="../">⬅ Back</a>
+        <h1>Pola & Urutan</h1>
+    </div>
+
+    <div class="container">
+        <p class="question" id="question">Lanjutkan pola berikut:</p>
+        
+        <div class="pattern-display" id="patternDisplay"></div>
+        
+        <div class="options" id="optionsContainer"></div>
+        
+        <div class="feedback" id="feedback"></div>
+        <div class="score" id="score">Skor: 0/0</div>
+        
+        <button class="btn-next" id="nextBtn" onclick="nextQuestion()">Soal Berikutnya</button>
+    </div>
+
+    <script>
+        const patterns = [
+            {
+                pattern: [1, 2, 1, 2, 1, '?'],
+                options: [1, 2, 3],
+                correct: 0
+            },
+            {
+                pattern: ['🔴', '🔵', '🔴', '🔵', '🔴', '?'],
+                options: ['🔵', '🔴', '🟡'],
+                correct: 0
+            },
+            {
+                pattern: [1, 2, 3, 1, 2, '?'],
+                options: [3, 1, 2],
+                correct: 0
+            },
+            {
+                pattern: ['⭐', '⭐', '🔷', '⭐', '⭐', '?'],
+                options: ['🔷', '⭐', '🟢'],
+                correct: 0
+            },
+            {
+                pattern: [2, 4, 2, 4, 2, '?'],
+                options: [4, 2, 3],
+                correct: 0
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+
+        function displayQuestion() {
+            const current = patterns[currentQuestion];
+            const patternDisplay = document.getElementById('patternDisplay');
+            const optionsContainer = document.getElementById('optionsContainer');
+            const feedback = document.getElementById('feedback');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            patternDisplay.innerHTML = '';
+            optionsContainer.innerHTML = '';
+            feedback.innerHTML = '';
+            answered = false;
+            nextBtn.disabled = true;
+            nextBtn.textContent = 'Soal Berikutnya';
+
+            current.pattern.forEach((item, index) => {
+                if (item === '?') {
+                    patternDisplay.innerHTML += `<div class="pattern-item question-mark"><span class="question-mark-text">?</span></div>`;
+                } else {
+                    patternDisplay.innerHTML += `<div class="pattern-item">${item}</div>`;
+                }
+                if (index < current.pattern.length - 1) {
+                    patternDisplay.innerHTML += `<div class="separator">→</div>`;
+                }
+            });
+
+            current.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option;
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            updateScore();
+        }
+
+        function checkAnswer(selectedIndex, btn) {
+            if (answered) return;
+            answered = true;
+            
+            const current = patterns[currentQuestion];
+            const feedback = document.getElementById('feedback');
+            const nextBtn = document.getElementById('nextBtn');
+            const options = document.querySelectorAll('.option-btn');
+            
+            options.forEach((option) => {
+                option.disabled = true;
+            });
+
+            if (selectedIndex === current.correct) {
+                feedback.textContent = '✓ Benar! Hebat!';
+                feedback.className = 'feedback correct';
+                btn.classList.add('correct');
+                score++;
+            } else {
+                feedback.textContent = '✗ Salah, coba lagi nanti!';
+                feedback.className = 'feedback wrong';
+                btn.classList.add('wrong');
+                options[current.correct].classList.add('correct');
+            }
+
+            nextBtn.disabled = false;
+            nextBtn.textContent = currentQuestion === patterns.length - 1 ? 'Selesai' : 'Soal Berikutnya';
+            updateScore();
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion >= patterns.length) {
+                showFinish();
+            } else {
+                displayQuestion();
+            }
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = `Skor: ${score}/${currentQuestion + 1}`;
+        }
+
+        function showFinish() {
+            const container = document.querySelector('.container');
+            const percentage = Math.round((score / patterns.length) * 100);
+            container.innerHTML = `
+                <h2 style="color: #9b59b6; margin-bottom: 20px;">🎉 Selesai!</h2>
+                <p style="font-size: 24px; color: #2c3e50; margin: 20px 0;">Skor Akhir: <strong>${score}/${patterns.length}</strong></p>
+                <p style="font-size: 18px; color: #666; margin: 20px 0;">${percentage}%</p>
+                <p style="font-size: 16px; color: #666;">${percentage >= 80 ? '⭐ Luar biasa!' : percentage >= 60 ? '👍 Bagus!' : '💪 Terus berlatih!'}</p>
+                <a href="../" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: #9b59b6; color: white; text-decoration: none; border-radius: 12px; font-weight: bold;">Kembali</a>
+            `;
+        }
+
+        displayQuestion();
+    </script>
+</body>
+</html>
