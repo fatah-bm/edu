@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cocokkan Pasangan</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e8f4f8 100%);
+            margin: 0;
+            padding: 16px;
+            text-align: center;
+            min-height: 100vh;
+        }
+        .top-bar {
+            display: flex;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto 20px auto;
+        }
+        .btn-back {
+            background-color: #c7ceea;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #a0a8c8;
+            text-decoration: none;
+            color: #333;
+        }
+        .btn-back:active { transform: translateY(4px); box-shadow: none; }
+        h1 {
+            color: #9b59b6;
+            font-size: 28px;
+            margin: 0;
+            flex: 1;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        .question {
+            font-size: 18px;
+            color: #2c3e50;
+            margin: 0 0 24px 0;
+            font-weight: bold;
+        }
+        .game-board {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .column {
+            text-align: center;
+        }
+        .column-title {
+            font-weight: bold;
+            color: #9b59b6;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        .card {
+            width: 100%;
+            aspect-ratio: 1;
+            border: 3px solid #9b59b6;
+            border-radius: 12px;
+            background: white;
+            font-size: 32px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #7a3f88;
+            margin-bottom: 12px;
+        }
+        .card:hover:not(.matched) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #7a3f88;
+        }
+        .card:active:not(.matched) {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #7a3f88;
+        }
+        .card.selected {
+            background: #fff3cd;
+            border-color: #ff9800;
+        }
+        .card.matched {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+            box-shadow: none;
+            cursor: default;
+        }
+        .score {
+            font-size: 16px;
+            color: #666;
+            margin: 16px 0;
+        }
+        .feedback {
+            font-size: 20px;
+            margin: 16px 0;
+            font-weight: bold;
+            height: 30px;
+        }
+        .feedback.correct { color: #4caf50; }
+        .feedback.wrong { color: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a class="btn-back" href="../">⬅ Back</a>
+        <h1>Cocokkan Pasangan</h1>
+    </div>
+
+    <div class="container">
+        <p class="question">Cocokkan pasangan yang sama!</p>
+        
+        <div class="game-board">
+            <div class="column">
+                <div class="column-title">Pilih</div>
+                <div id="leftColumn"></div>
+            </div>
+            <div class="column">
+                <div class="column-title">Pasangan</div>
+                <div id="rightColumn"></div>
+            </div>
+        </div>
+        
+        <div class="feedback" id="feedback"></div>
+        <div class="score" id="score">Pasangan ditemukan: 0/5</div>
+    </div>
+
+    <script>
+        const pairs = [
+            { left: '🐶', right: '🦴' },
+            { left: '🍎', right: '🌳' },
+            { left: '☀️', right: '🌤️' },
+            { left: '👕', right: '👖' },
+            { left: '🏠', right: '🚪' }
+        ];
+
+        let leftCards = [];
+        let rightCards = [];
+        let selectedLeft = null;
+        let matchedCount = 0;
+
+        function initGame() {
+            const leftColumn = document.getElementById('leftColumn');
+            const rightColumn = document.getElementById('rightColumn');
+            
+            leftColumn.innerHTML = '';
+            rightColumn.innerHTML = '';
+
+            pairs.forEach((pair, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.textContent = pair.left;
+                card.dataset.index = index;
+                card.onclick = () => selectCard('left', index, card);
+                leftColumn.appendChild(card);
+                leftCards[index] = card;
+            });
+
+            const rightPairs = pairs.map((p, i) => ({ ...p, originalIndex: i })).sort(() => Math.random() - 0.5);
+            rightPairs.forEach((pair, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.textContent = pair.right;
+                card.dataset.originalIndex = pair.originalIndex;
+                card.onclick = () => selectCard('right', pair.originalIndex, card);
+                rightColumn.appendChild(card);
+                rightCards[pair.originalIndex] = card;
+            });
+        }
+
+        function selectCard(side, index, cardElement) {
+            if (cardElement.classList.contains('matched')) return;
+
+            if (side === 'left') {
+                if (selectedLeft && selectedLeft !== cardElement) {
+                    selectedLeft.classList.remove('selected');
+                }
+                selectedLeft = cardElement;
+                cardElement.classList.add('selected');
+            } else if (selectedLeft) {
+                if (selectedLeft.dataset.index == index) {
+                    selectedLeft.classList.add('matched');
+                    selectedLeft.classList.remove('selected');
+                    cardElement.classList.add('matched');
+                    matchedCount++;
+                    
+                    document.getElementById('feedback').textContent = '✓ Cocok!';
+                    document.getElementById('feedback').className = 'feedback correct';
+                    document.getElementById('score').textContent = `Pasangan ditemukan: ${matchedCount}/5`;
+                    
+                    selectedLeft = null;
+
+                    if (matchedCount === pairs.length) {
+                        setTimeout(showFinish, 500);
+                    }
+                } else {
+                    document.getElementById('feedback').textContent = '✗ Tidak cocok!';
+                    document.getElementById('feedback').className = 'feedback wrong';
+                    selectedLeft.classList.remove('selected');
+                    selectedLeft = null;
+                }
+            }
+        }
+
+        function showFinish() {
+            const container = document.querySelector('.container');
+            container.innerHTML = `
+                <h2 style="color: #9b59b6; margin-bottom: 20px;">🎉 Selesai!</h2>
+                <p style="font-size: 24px; color: #2c3e50; margin: 20px 0;">Semua pasangan ditemukan!</p>
+                <p style="font-size: 16px; color: #666;">⭐ Luar biasa! Kamu hebat!</p>
+                <a href="../" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: #9b59b6; color: white; text-decoration: none; border-radius: 12px; font-weight: bold;">Kembali</a>
+            `;
+        }
+
+        initGame();
+    </script>
+</body>
+</html>
