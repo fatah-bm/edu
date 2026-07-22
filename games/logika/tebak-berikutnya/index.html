@@ -19,6 +19,7 @@
             align-items: center;
             max-width: 600px;
             margin: 0 auto 20px auto;
+            gap: 8px;
         }
         .btn-back {
             background-color: #c7ceea;
@@ -34,6 +35,17 @@
             color: #333;
         }
         .btn-back:active { transform: translateY(4px); box-shadow: none; }
+        .btn-audio {
+            background-color: #c7ceea;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #a0a8c8;
+            line-height: 1;
+        }
+        .btn-audio:active { transform: translateY(4px); box-shadow: none; }
         h1 {
             color: #9b59b6;
             font-size: 28px;
@@ -166,72 +178,246 @@
             cursor: not-allowed;
             box-shadow: 0 4px 0 #999;
         }
+        .btn-outline {
+            display: inline-block;
+            padding: 12px 24px;
+            background: white;
+            color: #9b59b6;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: bold;
+            border: 3px solid #9b59b6;
+        }
     </style>
 </head>
 <body>
     <div class="top-bar">
         <a class="btn-back" href="../">⬅ Back</a>
         <h1>Tebak Berikutnya</h1>
+        <button class="btn-audio" id="audioToggle" onclick="toggleAudio()">🔊</button>
     </div>
 
     <div class="container">
         <p class="question" id="question">Apa yang hilang?</p>
-        
+
         <div class="puzzle-display" id="puzzleDisplay"></div>
-        
+
         <div class="options" id="optionsContainer"></div>
-        
+
         <div class="feedback" id="feedback"></div>
         <div class="score" id="score">Skor: 0/0</div>
-        
+
         <button class="btn-next" id="nextBtn" onclick="nextQuestion()">Soal Berikutnya</button>
     </div>
 
     <script>
-        const puzzles = [
-            {
-                items: ['🍎', '🍊', '?', '🍌'],
-                hiddenIndex: 2,
-                options: ['🍋', '🍇', '🍓'],
-                correct: 0
-            },
-            {
-                items: ['⭐', '⭐', '🌙', '?'],
-                hiddenIndex: 3,
-                options: ['🌙', '⭐', '☀️'],
-                correct: 0
-            },
-            {
-                items: ['1', '?', '3', '4'],
-                hiddenIndex: 1,
-                options: ['2', '5', '6'],
-                correct: 0
-            },
-            {
-                items: ['🔴', '🔵', '?', '🟡'],
-                hiddenIndex: 2,
-                options: ['🟢', '🔴', '🔵'],
-                correct: 0
-            },
-            {
-                items: ['👕', '👖', '👗', '?'],
-                hiddenIndex: 3,
-                options: ['👟', '👒', '🧤'],
-                correct: 1
-            }
+        // Setiap soal punya logika yang bisa ditelusuri anak:
+        // - pola berulang AB-AB (posisi genap/ganjil)
+        // - deret hitung (loncat tetap)
+        // - "yang belum pernah muncul" (2 opsi sudah ada di deret, 1 opsi baru = jawaban)
+        const puzzleBank = [
+            { items: ['🔴', '🔵', '?', '🔵'], hiddenIndex: 2, answer: '🔴', options: ['🔴', '🔵', '🟢'] },
+            { items: ['⭐', '?', '⭐', '🌙'], hiddenIndex: 1, answer: '🌙', options: ['🌙', '⭐', '☀️'] },
+            { items: ['1', '2', '1', '?'], hiddenIndex: 3, answer: '2', options: ['2', '1', '3'] },
+            { items: ['?', '🟦', '🟩', '🟦'], hiddenIndex: 0, answer: '🟩', options: ['🟩', '🟦', '🟨'] },
+            { items: ['🐰', '🐻', '?', '🐻'], hiddenIndex: 2, answer: '🐰', options: ['🐰', '🐻', '🐼'] },
+            { items: ['1', '?', '3', '4'], hiddenIndex: 1, answer: '2', options: ['2', '5', '6'] },
+            { items: ['?', '2', '3', '4'], hiddenIndex: 0, answer: '1', options: ['1', '5', '0'] },
+            { items: ['5', '10', '?', '20'], hiddenIndex: 2, answer: '15', options: ['15', '12', '18'] },
+            { items: ['2', '4', '6', '?'], hiddenIndex: 3, answer: '8', options: ['8', '7', '10'] },
+            { items: ['10', '?', '30', '40'], hiddenIndex: 1, answer: '20', options: ['20', '25', '15'] },
+            { items: ['3', '6', '9', '?'], hiddenIndex: 3, answer: '12', options: ['12', '10', '15'] },
+            { items: ['20', '?', '40', '50'], hiddenIndex: 1, answer: '30', options: ['30', '35', '25'] },
+            { items: ['🔴', '🔵', '?', '🟡'], hiddenIndex: 2, answer: '🟢', options: ['🟢', '🔴', '🔵'] },
+            { items: ['🐶', '🐱', '🐰', '?'], hiddenIndex: 3, answer: '🐻', options: ['🐻', '🐶', '🐱'] },
+            { items: ['🍎', '🍌', '?', '🍇'], hiddenIndex: 2, answer: '🍊', options: ['🍊', '🍎', '🍌'] },
+            { items: ['🔺', '🔵', '🟩', '?'], hiddenIndex: 3, answer: '🟨', options: ['🟨', '🔺', '🔵'] }
         ];
 
+        // Kumpulan simbol untuk generator puzzle acak (procedural),
+        // supaya variasi soal jauh lebih luas daripada bank statis di atas.
+        const emojiPools = [
+            ['🐶', '🐱', '🐰', '🐻', '🐼', '🐨'],
+            ['🍎', '🍌', '🍇', '🍊', '🍓', '🍉'],
+            ['🔴', '🔵', '🟢', '🟡', '🟣', '🟠'],
+            ['🔺', '🔵', '🟩', '🟨', '⬛', '⬜'],
+            ['⭐', '🌙', '☀️', '🌧️', '⛄', '🌈']
+        ];
+
+        function pickWrong(pool, exclude, count) {
+            return shuffleArray(pool.filter(v => !exclude.includes(v))).slice(0, count);
+        }
+
+        // Yang belum pernah muncul: 3 simbol ditampilkan, 1 simbol baru = jawaban,
+        // 2 opsi salah memakai simbol yang sudah tampil (jadi bisa dieliminasi).
+        function genEliminationPuzzle() {
+            const pool = shuffleArray(emojiPools[Math.floor(Math.random() * emojiPools.length)]);
+            const shown = pool.slice(0, 3);
+            const answer = pool[3];
+            const hiddenIndex = Math.floor(Math.random() * 4);
+            const items = [];
+            let s = 0;
+            for (let i = 0; i < 4; i++) {
+                items.push(i === hiddenIndex ? '?' : shown[s++]);
+            }
+            const distractors = shuffleArray(shown).slice(0, 2);
+            return { items, hiddenIndex, answer, options: [answer, ...distractors] };
+        }
+
+        // Pola berulang AB-AB dengan posisi tersembunyi acak
+        function genCycleMiddlePuzzle() {
+            const pool = shuffleArray(emojiPools[Math.floor(Math.random() * emojiPools.length)]);
+            const [a, b] = pool.slice(0, 2);
+            const seq = [a, b, a, b];
+            const hiddenIndex = Math.floor(Math.random() * 4);
+            const answer = seq[hiddenIndex];
+            const items = [...seq];
+            items[hiddenIndex] = '?';
+            const other = answer === a ? b : a;
+            const fresh = pickWrong(pool, [a, b], 2);
+            const distractors = [other, ...fresh].slice(0, 2);
+            return { items, hiddenIndex, answer, options: [answer, ...distractors] };
+        }
+
+        // Deret hitung dengan posisi tersembunyi acak
+        function genArithmeticMiddlePuzzle() {
+            const stepPool = [1, 2, 3, 5, 10];
+            const step = stepPool[Math.floor(Math.random() * stepPool.length)];
+            const start = Math.floor(Math.random() * 20) + 1;
+            const seq = [];
+            for (let i = 0; i < 4; i++) seq.push(start + i * step);
+            const hiddenIndex = Math.floor(Math.random() * 4);
+            const answerNum = seq[hiddenIndex];
+            const items = seq.map(String);
+            items[hiddenIndex] = '?';
+            const wrongCandidates = [answerNum + step, answerNum - step, answerNum + 1, answerNum - 1, answerNum + step * 2]
+                .filter(n => n >= 0 && n !== answerNum);
+            const distractors = [];
+            for (const c of shuffleArray(wrongCandidates)) {
+                if (distractors.length >= 2) break;
+                if (!distractors.includes(c)) distractors.push(c);
+            }
+            while (distractors.length < 2) {
+                const c = answerNum + Math.floor(Math.random() * 6) + 2;
+                if (c !== answerNum && !distractors.includes(c)) distractors.push(c);
+            }
+            return { items, hiddenIndex, answer: String(answerNum), options: [String(answerNum), ...distractors.map(String)] };
+        }
+
+        const generators = [genEliminationPuzzle, genCycleMiddlePuzzle, genArithmeticMiddlePuzzle];
+        const CURATED_COUNT = 3;
+        const PROCEDURAL_COUNT = 5;
+
+        let roundQuestions = [];
         let currentQuestion = 0;
         let score = 0;
         let answered = false;
 
+        function shuffleArray(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        // Audio (Web Audio API oscillator, sama seperti games/math/tambahkali)
+        let audioCtx;
+        let isAudioEnabled = true;
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function toggleAudio() {
+            isAudioEnabled = !isAudioEnabled;
+            document.getElementById('audioToggle').textContent = isAudioEnabled ? '🔊' : '🔇';
+        }
+
+        function playSfx(type) {
+            if (!isAudioEnabled) return;
+            initAudioContext();
+
+            if (type === 'finish') {
+                [0, 0.2, 0.4].forEach((delay, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600 + i * 150, audioCtx.currentTime + delay);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + 0.3);
+                    osc.start(audioCtx.currentTime + delay);
+                    osc.stop(audioCtx.currentTime + delay + 0.3);
+                });
+                return;
+            }
+
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'correct') {
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'wrong') {
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        function renderGameScreen() {
+            const container = document.querySelector('.container');
+            container.innerHTML = `
+                <p class="question" id="question">Apa yang hilang?</p>
+                <div class="puzzle-display" id="puzzleDisplay"></div>
+                <div class="options" id="optionsContainer"></div>
+                <div class="feedback" id="feedback"></div>
+                <div class="score" id="score">Skor: 0/0</div>
+                <button class="btn-next" id="nextBtn" onclick="nextQuestion()">Soal Berikutnya</button>
+            `;
+        }
+
+        function startGame() {
+            const curated = shuffleArray(puzzleBank).slice(0, CURATED_COUNT);
+            const procedural = [];
+            for (let i = 0; i < PROCEDURAL_COUNT; i++) {
+                const gen = generators[Math.floor(Math.random() * generators.length)];
+                procedural.push(gen());
+            }
+            roundQuestions = shuffleArray([...curated, ...procedural]).map(q => {
+                const options = shuffleArray(q.options);
+                return { items: q.items, hiddenIndex: q.hiddenIndex, options, correct: options.indexOf(q.answer) };
+            });
+            currentQuestion = 0;
+            score = 0;
+            renderGameScreen();
+            displayQuestion();
+        }
+
         function displayQuestion() {
-            const current = puzzles[currentQuestion];
+            const current = roundQuestions[currentQuestion];
             const puzzleDisplay = document.getElementById('puzzleDisplay');
             const optionsContainer = document.getElementById('optionsContainer');
             const feedback = document.getElementById('feedback');
             const nextBtn = document.getElementById('nextBtn');
-            
+
             puzzleDisplay.innerHTML = '';
             optionsContainer.innerHTML = '';
             feedback.innerHTML = '';
@@ -264,12 +450,12 @@
         function checkAnswer(selectedIndex, btn) {
             if (answered) return;
             answered = true;
-            
-            const current = puzzles[currentQuestion];
+
+            const current = roundQuestions[currentQuestion];
             const feedback = document.getElementById('feedback');
             const nextBtn = document.getElementById('nextBtn');
             const options = document.querySelectorAll('.option-btn');
-            
+
             options.forEach((option) => {
                 option.disabled = true;
             });
@@ -279,21 +465,23 @@
                 feedback.className = 'feedback correct';
                 btn.classList.add('correct');
                 score++;
+                playSfx('correct');
             } else {
                 feedback.textContent = '✗ Salah, coba lagi nanti!';
                 feedback.className = 'feedback wrong';
                 btn.classList.add('wrong');
                 options[current.correct].classList.add('correct');
+                playSfx('wrong');
             }
 
             nextBtn.disabled = false;
-            nextBtn.textContent = currentQuestion === puzzles.length - 1 ? 'Selesai' : 'Soal Berikutnya';
+            nextBtn.textContent = currentQuestion === roundQuestions.length - 1 ? 'Selesai' : 'Soal Berikutnya';
             updateScore();
         }
 
         function nextQuestion() {
             currentQuestion++;
-            if (currentQuestion >= puzzles.length) {
+            if (currentQuestion >= roundQuestions.length) {
                 showFinish();
             } else {
                 displayQuestion();
@@ -305,18 +493,22 @@
         }
 
         function showFinish() {
+            playSfx('finish');
             const container = document.querySelector('.container');
-            const percentage = Math.round((score / puzzles.length) * 100);
+            const percentage = Math.round((score / roundQuestions.length) * 100);
             container.innerHTML = `
                 <h2 style="color: #9b59b6; margin-bottom: 20px;">🎉 Selesai!</h2>
-                <p style="font-size: 24px; color: #2c3e50; margin: 20px 0;">Skor Akhir: <strong>${score}/${puzzles.length}</strong></p>
+                <p style="font-size: 24px; color: #2c3e50; margin: 20px 0;">Skor Akhir: <strong>${score}/${roundQuestions.length}</strong></p>
                 <p style="font-size: 18px; color: #666; margin: 20px 0;">${percentage}%</p>
                 <p style="font-size: 16px; color: #666;">${percentage >= 80 ? '⭐ Luar biasa!' : percentage >= 60 ? '👍 Bagus!' : '💪 Terus berlatih!'}</p>
-                <a href="../" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: #9b59b6; color: white; text-decoration: none; border-radius: 12px; font-weight: bold;">Kembali</a>
+                <div style="display:flex; gap:12px; justify-content:center; margin-top:20px; flex-wrap:wrap;">
+                    <button class="btn-next" style="margin:0;" onclick="startGame()">🔄 Main Lagi</button>
+                    <a href="../" class="btn-outline">Kembali</a>
+                </div>
             `;
         }
 
-        displayQuestion();
+        startGame();
     </script>
 </body>
 </html>

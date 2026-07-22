@@ -19,6 +19,7 @@
             align-items: center;
             max-width: 600px;
             margin: 0 auto 20px auto;
+            gap: 8px;
         }
         .btn-back {
             background-color: #c7ceea;
@@ -34,6 +35,17 @@
             color: #333;
         }
         .btn-back:active { transform: translateY(4px); box-shadow: none; }
+        .btn-audio {
+            background-color: #c7ceea;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #a0a8c8;
+            line-height: 1;
+        }
+        .btn-audio:active { transform: translateY(4px); box-shadow: none; }
         h1 {
             color: #9b59b6;
             font-size: 28px;
@@ -166,67 +178,242 @@
             cursor: not-allowed;
             box-shadow: 0 4px 0 #999;
         }
+        .btn-outline {
+            display: inline-block;
+            padding: 12px 24px;
+            background: white;
+            color: #9b59b6;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: bold;
+            border: 3px solid #9b59b6;
+        }
     </style>
 </head>
 <body>
     <div class="top-bar">
         <a class="btn-back" href="../">⬅ Back</a>
         <h1>Pola & Urutan</h1>
+        <button class="btn-audio" id="audioToggle" onclick="toggleAudio()">🔊</button>
     </div>
 
     <div class="container">
         <p class="question" id="question">Lanjutkan pola berikut:</p>
-        
+
         <div class="pattern-display" id="patternDisplay"></div>
-        
+
         <div class="options" id="optionsContainer"></div>
-        
+
         <div class="feedback" id="feedback"></div>
         <div class="score" id="score">Skor: 0/0</div>
-        
+
         <button class="btn-next" id="nextBtn" onclick="nextQuestion()">Soal Berikutnya</button>
     </div>
 
     <script>
-        const patterns = [
-            {
-                pattern: [1, 2, 1, 2, 1, '?'],
-                options: [1, 2, 3],
-                correct: 0
-            },
-            {
-                pattern: ['🔴', '🔵', '🔴', '🔵', '🔴', '?'],
-                options: ['🔵', '🔴', '🟡'],
-                correct: 0
-            },
-            {
-                pattern: [1, 2, 3, 1, 2, '?'],
-                options: [3, 1, 2],
-                correct: 0
-            },
-            {
-                pattern: ['⭐', '⭐', '🔷', '⭐', '⭐', '?'],
-                options: ['🔷', '⭐', '🟢'],
-                correct: 0
-            },
-            {
-                pattern: [2, 4, 2, 4, 2, '?'],
-                options: [4, 2, 3],
-                correct: 0
-            }
+        const patternBank = [
+            { pattern: [1, 2, 1, 2, 1, '?'], answer: 2, options: [2, 1, 3] },
+            { pattern: ['🔴', '🔵', '🔴', '🔵', '🔴', '?'], answer: '🔵', options: ['🔵', '🔴', '🟡'] },
+            { pattern: [1, 2, 3, 1, 2, '?'], answer: 3, options: [3, 1, 2] },
+            { pattern: ['⭐', '⭐', '🔷', '⭐', '⭐', '?'], answer: '🔷', options: ['🔷', '⭐', '🟢'] },
+            { pattern: [2, 4, 2, 4, 2, '?'], answer: 4, options: [4, 2, 3] },
+            { pattern: [1, 2, 3, 4, 5, '?'], answer: 6, options: [6, 7, 5] },
+            { pattern: [2, 4, 6, 8, 10, '?'], answer: 12, options: [12, 11, 14] },
+            { pattern: [5, 4, 3, 2, 1, '?'], answer: 0, options: [0, 1, 2] },
+            { pattern: ['🟩', '🟦', '🟩', '🟦', '🟩', '?'], answer: '🟦', options: ['🟦', '🟩', '🟨'] },
+            { pattern: ['🍎', '🍌', '🍇', '🍎', '🍌', '?'], answer: '🍇', options: ['🍇', '🍎', '🍊'] },
+            { pattern: ['🐶', '🐶', '🐱', '🐶', '🐶', '?'], answer: '🐱', options: ['🐱', '🐶', '🐰'] },
+            { pattern: ['🔴', '🟡', '🟢', '🔴', '🟡', '?'], answer: '🟢', options: ['🟢', '🔴', '🔵'] },
+            { pattern: [3, 6, 9, 12, 15, '?'], answer: 18, options: [18, 16, 20] },
+            { pattern: ['☀️', '🌧️', '☀️', '🌧️', '☀️', '?'], answer: '🌧️', options: ['🌧️', '☀️', '⛄'] },
+            { pattern: ['🐰', '🐻', '🐰', '🐻', '🐰', '?'], answer: '🐻', options: ['🐻', '🐰', '🐼'] },
+            { pattern: [10, 20, 30, 40, 50, '?'], answer: 60, options: [60, 55, 70] },
+            { pattern: ['🟣', '🟣', '🟠', '🟣', '🟣', '?'], answer: '🟠', options: ['🟠', '🟣', '🟡'] }
         ];
 
+        // Kumpulan simbol untuk generator pola acak (procedural),
+        // supaya variasi soal jauh lebih luas daripada bank statis di atas.
+        const emojiPools = [
+            ['🔴', '🔵', '🟢', '🟡'],
+            ['⭐', '🌙', '☀️'],
+            ['🐶', '🐱', '🐰', '🐻'],
+            ['🍎', '🍌', '🍇', '🍊'],
+            ['🟩', '🟦', '🟨', '🟪'],
+            ['🐝', '🦋', '🐞'],
+            ['☀️', '🌧️', '⛄', '🌈']
+        ];
+
+        function pickWrong(pool, answer, count) {
+            return shuffleArray(pool.filter(v => v !== answer)).slice(0, count);
+        }
+
+        // Pola berulang periode 2 atau 3 (mis. AB-AB-A? atau ABC-AB?)
+        function genCyclePattern() {
+            const pool = emojiPools[Math.floor(Math.random() * emojiPools.length)];
+            const period = Math.random() < 0.5 ? 2 : Math.min(3, pool.length);
+            const symbols = shuffleArray(pool).slice(0, period);
+            const sequence = [];
+            for (let i = 0; i < 6; i++) sequence.push(symbols[i % period]);
+            const answer = sequence[5];
+            sequence[5] = '?';
+            const distractors = pickWrong(pool, answer, 2);
+            return { pattern: sequence, answer, options: [answer, ...distractors] };
+        }
+
+        // Pola AAB (mis. ⭐⭐🔷-⭐⭐?)
+        function genAABPattern() {
+            const pool = emojiPools[Math.floor(Math.random() * emojiPools.length)];
+            const [a, b] = shuffleArray(pool).slice(0, 2);
+            const symbols = [a, a, b];
+            const sequence = [];
+            for (let i = 0; i < 6; i++) sequence.push(symbols[i % 3]);
+            const answer = sequence[5];
+            sequence[5] = '?';
+            const distractors = pickWrong(pool, answer, 2);
+            return { pattern: sequence, answer, options: [answer, ...distractors] };
+        }
+
+        // Deret hitung naik/turun dengan loncatan acak (1, 2, 3, 5, atau 10)
+        function genArithmeticPattern() {
+            const stepPool = [1, 2, 3, 5, 10];
+            const step = stepPool[Math.floor(Math.random() * stepPool.length)];
+            const decreasing = Math.random() < 0.3;
+            const start = decreasing
+                ? (Math.floor(Math.random() * 30) + 1) + step * 5
+                : Math.floor(Math.random() * 20) + 1;
+            const dir = decreasing ? -1 : 1;
+            const sequence = [];
+            for (let i = 0; i < 6; i++) sequence.push(start + i * step * dir);
+            const answer = sequence[5];
+            sequence[5] = '?';
+            const wrongCandidates = [answer + step, answer - step, answer + step * 2, answer - step * 2, answer + 1, answer - 1]
+                .filter(n => n >= 0 && n !== answer);
+            const distractors = [];
+            for (const c of shuffleArray(wrongCandidates)) {
+                if (distractors.length >= 2) break;
+                if (!distractors.includes(c)) distractors.push(c);
+            }
+            while (distractors.length < 2) {
+                const c = answer + Math.floor(Math.random() * 6) + 2;
+                if (c !== answer && !distractors.includes(c)) distractors.push(c);
+            }
+            return { pattern: sequence, answer, options: [answer, ...distractors] };
+        }
+
+        const generators = [genCyclePattern, genAABPattern, genArithmeticPattern];
+        const CURATED_COUNT = 3;
+        const PROCEDURAL_COUNT = 5;
+
+        let roundQuestions = [];
         let currentQuestion = 0;
         let score = 0;
         let answered = false;
 
+        function shuffleArray(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        // Audio (Web Audio API oscillator, sama seperti games/math/tambahkali)
+        let audioCtx;
+        let isAudioEnabled = true;
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function toggleAudio() {
+            isAudioEnabled = !isAudioEnabled;
+            document.getElementById('audioToggle').textContent = isAudioEnabled ? '🔊' : '🔇';
+        }
+
+        function playSfx(type) {
+            if (!isAudioEnabled) return;
+            initAudioContext();
+
+            if (type === 'finish') {
+                [0, 0.2, 0.4].forEach((delay, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600 + i * 150, audioCtx.currentTime + delay);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + 0.3);
+                    osc.start(audioCtx.currentTime + delay);
+                    osc.stop(audioCtx.currentTime + delay + 0.3);
+                });
+                return;
+            }
+
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'correct') {
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'wrong') {
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        function renderGameScreen() {
+            const container = document.querySelector('.container');
+            container.innerHTML = `
+                <p class="question" id="question">Lanjutkan pola berikut:</p>
+                <div class="pattern-display" id="patternDisplay"></div>
+                <div class="options" id="optionsContainer"></div>
+                <div class="feedback" id="feedback"></div>
+                <div class="score" id="score">Skor: 0/0</div>
+                <button class="btn-next" id="nextBtn" onclick="nextQuestion()">Soal Berikutnya</button>
+            `;
+        }
+
+        function startGame() {
+            const curated = shuffleArray(patternBank).slice(0, CURATED_COUNT);
+            const procedural = [];
+            for (let i = 0; i < PROCEDURAL_COUNT; i++) {
+                const gen = generators[Math.floor(Math.random() * generators.length)];
+                procedural.push(gen());
+            }
+            roundQuestions = shuffleArray([...curated, ...procedural]).map(q => {
+                const options = shuffleArray(q.options);
+                return { pattern: q.pattern, options, correct: options.indexOf(q.answer) };
+            });
+            currentQuestion = 0;
+            score = 0;
+            renderGameScreen();
+            displayQuestion();
+        }
+
         function displayQuestion() {
-            const current = patterns[currentQuestion];
+            const current = roundQuestions[currentQuestion];
             const patternDisplay = document.getElementById('patternDisplay');
             const optionsContainer = document.getElementById('optionsContainer');
             const feedback = document.getElementById('feedback');
             const nextBtn = document.getElementById('nextBtn');
-            
+
             patternDisplay.innerHTML = '';
             optionsContainer.innerHTML = '';
             feedback.innerHTML = '';
@@ -259,12 +446,12 @@
         function checkAnswer(selectedIndex, btn) {
             if (answered) return;
             answered = true;
-            
-            const current = patterns[currentQuestion];
+
+            const current = roundQuestions[currentQuestion];
             const feedback = document.getElementById('feedback');
             const nextBtn = document.getElementById('nextBtn');
             const options = document.querySelectorAll('.option-btn');
-            
+
             options.forEach((option) => {
                 option.disabled = true;
             });
@@ -274,21 +461,23 @@
                 feedback.className = 'feedback correct';
                 btn.classList.add('correct');
                 score++;
+                playSfx('correct');
             } else {
                 feedback.textContent = '✗ Salah, coba lagi nanti!';
                 feedback.className = 'feedback wrong';
                 btn.classList.add('wrong');
                 options[current.correct].classList.add('correct');
+                playSfx('wrong');
             }
 
             nextBtn.disabled = false;
-            nextBtn.textContent = currentQuestion === patterns.length - 1 ? 'Selesai' : 'Soal Berikutnya';
+            nextBtn.textContent = currentQuestion === roundQuestions.length - 1 ? 'Selesai' : 'Soal Berikutnya';
             updateScore();
         }
 
         function nextQuestion() {
             currentQuestion++;
-            if (currentQuestion >= patterns.length) {
+            if (currentQuestion >= roundQuestions.length) {
                 showFinish();
             } else {
                 displayQuestion();
@@ -300,18 +489,22 @@
         }
 
         function showFinish() {
+            playSfx('finish');
             const container = document.querySelector('.container');
-            const percentage = Math.round((score / patterns.length) * 100);
+            const percentage = Math.round((score / roundQuestions.length) * 100);
             container.innerHTML = `
                 <h2 style="color: #9b59b6; margin-bottom: 20px;">🎉 Selesai!</h2>
-                <p style="font-size: 24px; color: #2c3e50; margin: 20px 0;">Skor Akhir: <strong>${score}/${patterns.length}</strong></p>
+                <p style="font-size: 24px; color: #2c3e50; margin: 20px 0;">Skor Akhir: <strong>${score}/${roundQuestions.length}</strong></p>
                 <p style="font-size: 18px; color: #666; margin: 20px 0;">${percentage}%</p>
                 <p style="font-size: 16px; color: #666;">${percentage >= 80 ? '⭐ Luar biasa!' : percentage >= 60 ? '👍 Bagus!' : '💪 Terus berlatih!'}</p>
-                <a href="../" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: #9b59b6; color: white; text-decoration: none; border-radius: 12px; font-weight: bold;">Kembali</a>
+                <div style="display:flex; gap:12px; justify-content:center; margin-top:20px; flex-wrap:wrap;">
+                    <button class="btn-next" style="margin:0;" onclick="startGame()">🔄 Main Lagi</button>
+                    <a href="../" class="btn-outline">Kembali</a>
+                </div>
             `;
         }
 
-        displayQuestion();
+        startGame();
     </script>
 </body>
 </html>
