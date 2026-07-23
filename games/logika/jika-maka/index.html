@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Logika Jika-Maka</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e8f4f8 100%);
+            margin: 0;
+            padding: 16px;
+            text-align: center;
+            min-height: 100vh;
+        }
+        .top-bar {
+            display: flex;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto 20px auto;
+            gap: 8px;
+        }
+        .btn-back {
+            background-color: #c7ceea;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #a0a8c8;
+            text-decoration: none;
+            color: #333;
+        }
+        .btn-back:active { transform: translateY(4px); box-shadow: none; }
+        .btn-audio {
+            background-color: #c7ceea;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #a0a8c8;
+            line-height: 1;
+        }
+        .btn-audio:active { transform: translateY(4px); box-shadow: none; }
+        h1 {
+            color: #9b59b6;
+            font-size: 26px;
+            margin: 0;
+            flex: 1;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        .level-info {
+            font-size: 13px;
+            color: #999;
+            margin: 0 0 12px 0;
+        }
+        .rule-box {
+            background: #f5f0fa;
+            border-radius: 16px;
+            padding: 20px 16px;
+            margin: 0 0 24px 0;
+        }
+        .rule-label {
+            font-size: 13px;
+            color: #9b59b6;
+            font-weight: bold;
+            margin: 0 0 6px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .rule-condition {
+            font-size: 22px;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        .rule-arrow {
+            font-size: 22px;
+            color: #ff9800;
+            margin: 10px 0;
+        }
+        .rule-question {
+            font-size: 18px;
+            color: #2c3e50;
+            font-weight: bold;
+            margin: 0 0 20px 0;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 0 0 24px 0;
+        }
+        .option-btn {
+            padding: 14px 16px;
+            border: 3px solid #9b59b6;
+            border-radius: 14px;
+            background: white;
+            font-size: 18px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #7a3f88;
+            color: #2c3e50;
+        }
+        .option-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #7a3f88;
+        }
+        .option-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        .option-btn.correct {
+            background: #4caf50;
+            border-color: #4caf50;
+            color: white;
+            animation: pulse 0.6s;
+        }
+        .option-btn.wrong {
+            background: #f44336;
+            border-color: #f44336;
+            color: white;
+            animation: shake 0.6s;
+        }
+        .option-btn:disabled { cursor: not-allowed; }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        .feedback {
+            font-size: 20px;
+            margin: 16px 0;
+            font-weight: bold;
+            min-height: 30px;
+        }
+        .feedback.correct { color: #4caf50; }
+        .feedback.wrong { color: #f44336; }
+        .score {
+            font-size: 16px;
+            color: #666;
+            margin: 16px 0;
+        }
+        .btn-next {
+            background-color: #9b59b6;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #7a3f88;
+            color: white;
+            margin: 16px 0;
+        }
+        .btn-next:active { transform: translateY(4px); box-shadow: none; }
+        .btn-next:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            box-shadow: 0 4px 0 #999;
+        }
+        .btn-outline {
+            display: inline-block;
+            padding: 12px 24px;
+            background: white;
+            color: #9b59b6;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: bold;
+            border: 3px solid #9b59b6;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a class="btn-back" href="../">⬅ Back</a>
+        <h1>Jika-Maka</h1>
+        <button class="btn-audio" id="audioToggle" onclick="toggleAudio()">🔊</button>
+    </div>
+
+    <div class="container" id="container"></div>
+
+    <script>
+        const ROUND_SIZE = 8;
+
+        // Setiap kategori berisi pasangan kondisi -> tindakan yang benar.
+        // Pengecoh (distractor) diambil dari tindakan lain di kategori yang sama,
+        // supaya tetap masuk akal tapi salah konteks.
+        const categories = [
+            {
+                name: 'cuaca',
+                rules: [
+                    { cond: '🌧️ Hujan turun', action: '☂️ Pakai payung' },
+                    { cond: '☀️ Matahari sangat terik', action: '🧢 Pakai topi' },
+                    { cond: '❄️ Cuaca sangat dingin', action: '🧥 Pakai jaket tebal' },
+                    { cond: '💨 Angin kencang di luar', action: '🚪 Tutup jendela' }
+                ]
+            },
+            {
+                name: 'lalu-lintas',
+                rules: [
+                    { cond: '🔴 Lampu merah menyala', action: '🛑 Berhenti' },
+                    { cond: '🟡 Lampu kuning menyala', action: '⏳ Bersiap-siap' },
+                    { cond: '🟢 Lampu hijau menyala', action: '🚶 Boleh jalan' }
+                ]
+            },
+            {
+                name: 'rutinitas',
+                rules: [
+                    { cond: '🌅 Baru bangun tidur', action: '🪥 Gosok gigi' },
+                    { cond: '🌙 Sudah malam dan mengantuk', action: '😴 Waktunya tidur' },
+                    { cond: '🍽️ Sebelum makan', action: '🧼 Cuci tangan' },
+                    { cond: '📚 Waktunya berangkat sekolah', action: '🎒 Pakai tas & seragam' }
+                ]
+            },
+            {
+                name: 'perasaan',
+                rules: [
+                    { cond: '😢 Teman terlihat sedih', action: '🤗 Beri semangat & pelukan' },
+                    { cond: '🎂 Ulang tahun temanmu', action: '🎉 Ucapkan selamat' },
+                    { cond: '😡 Kamu sedang marah', action: '🧘 Tarik napas dan tenang' },
+                    { cond: '🤕 Teman terluka', action: '🏥 Minta bantuan orang dewasa' }
+                ]
+            },
+            {
+                name: 'aman-sehat',
+                rules: [
+                    { cond: '🔥 Ada asap atau kebakaran', action: '🚪 Segera keluar & cari bantuan' },
+                    { cond: '🚦 Mau menyeberang jalan', action: '👀 Lihat kanan-kiri dulu' },
+                    { cond: '🩸 Kulit terluka kecil', action: '🩹 Tempel plester' },
+                    { cond: '🤧 Mau bersin atau batuk', action: '🤲 Tutup mulut & hidung' }
+                ]
+            }
+        ];
+
+        let roundQuestions = [];
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+
+        function shuffleArray(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        // Audio (Web Audio API oscillator, sama seperti games/math/tambahkali)
+        let audioCtx;
+        let isAudioEnabled = true;
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function toggleAudio() {
+            isAudioEnabled = !isAudioEnabled;
+            document.getElementById('audioToggle').textContent = isAudioEnabled ? '🔊' : '🔇';
+        }
+
+        function playSfx(type) {
+            if (!isAudioEnabled) return;
+            initAudioContext();
+
+            if (type === 'finish') {
+                [0, 0.2, 0.4].forEach((delay, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600 + i * 150, audioCtx.currentTime + delay);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + 0.3);
+                    osc.start(audioCtx.currentTime + delay);
+                    osc.stop(audioCtx.currentTime + delay + 0.3);
+                });
+                return;
+            }
+
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'correct') {
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'wrong') {
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        function buildQuestion(category, rule) {
+            const sameCategoryPool = category.rules
+                .filter(r => r.action !== rule.action)
+                .map(r => r.action);
+
+            let distractors = shuffleArray(sameCategoryPool).slice(0, 2);
+
+            if (distractors.length < 2) {
+                const allOtherActions = categories
+                    .flatMap(c => c.rules)
+                    .map(r => r.action)
+                    .filter(a => a !== rule.action && !distractors.includes(a));
+                distractors = distractors.concat(shuffleArray(allOtherActions).slice(0, 2 - distractors.length));
+            }
+
+            const options = shuffleArray([rule.action, ...distractors]);
+            return { cond: rule.cond, correct: options.indexOf(rule.action), options };
+        }
+
+        function renderGameScreen() {
+            const container = document.getElementById('container');
+            container.innerHTML = `
+                <p class="level-info" id="levelInfo"></p>
+                <div class="rule-box">
+                    <p class="rule-label">Jika...</p>
+                    <p class="rule-condition" id="ruleCondition"></p>
+                </div>
+                <p class="rule-question">Maka apa yang sebaiknya dilakukan?</p>
+                <div class="options" id="optionsContainer"></div>
+                <div class="feedback" id="feedback"></div>
+                <div class="score" id="score">Skor: 0/0</div>
+                <button class="btn-next" id="nextBtn" onclick="nextQuestion()">Soal Berikutnya</button>
+            `;
+        }
+
+        function startGame() {
+            const allRules = shuffleArray(categories.flatMap(c => c.rules.map(r => ({ category: c, rule: r }))));
+            const picked = allRules.slice(0, ROUND_SIZE);
+            roundQuestions = picked.map(({ category, rule }) => buildQuestion(category, rule));
+            currentQuestion = 0;
+            score = 0;
+            renderGameScreen();
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            const current = roundQuestions[currentQuestion];
+            const optionsContainer = document.getElementById('optionsContainer');
+            const feedback = document.getElementById('feedback');
+            const nextBtn = document.getElementById('nextBtn');
+
+            document.getElementById('ruleCondition').textContent = current.cond;
+            document.getElementById('levelInfo').textContent = `Soal ${currentQuestion + 1}/${roundQuestions.length}`;
+            optionsContainer.innerHTML = '';
+            feedback.innerHTML = '';
+            answered = false;
+            nextBtn.disabled = true;
+            nextBtn.textContent = 'Soal Berikutnya';
+
+            current.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option;
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            updateScore();
+        }
+
+        function checkAnswer(selectedIndex, btn) {
+            if (answered) return;
+            answered = true;
+
+            const current = roundQuestions[currentQuestion];
+            const feedback = document.getElementById('feedback');
+            const nextBtn = document.getElementById('nextBtn');
+            const options = document.querySelectorAll('.option-btn');
+
+            options.forEach(option => { option.disabled = true; });
+
+            if (selectedIndex === current.correct) {
+                feedback.textContent = '✓ Benar! Keputusan yang tepat!';
+                feedback.className = 'feedback correct';
+                btn.classList.add('correct');
+                score++;
+                playSfx('correct');
+            } else {
+                feedback.textContent = '✗ Belum tepat, lihat jawaban yang benar ya!';
+                feedback.className = 'feedback wrong';
+                btn.classList.add('wrong');
+                options[current.correct].classList.add('correct');
+                playSfx('wrong');
+            }
+
+            nextBtn.disabled = false;
+            nextBtn.textContent = currentQuestion === roundQuestions.length - 1 ? 'Selesai' : 'Soal Berikutnya';
+            updateScore();
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion >= roundQuestions.length) {
+                showFinish();
+            } else {
+                displayQuestion();
+            }
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = `Skor: ${score}/${currentQuestion + 1}`;
+        }
+
+        function showFinish() {
+            playSfx('finish');
+            const container = document.getElementById('container');
+            const percentage = Math.round((score / roundQuestions.length) * 100);
+            container.innerHTML = `
+                <h2 style="color: #9b59b6; margin-bottom: 20px;">🎉 Selesai!</h2>
+                <p style="font-size: 24px; color: #2c3e50; margin: 20px 0;">Skor Akhir: <strong>${score}/${roundQuestions.length}</strong></p>
+                <p style="font-size: 18px; color: #666; margin: 20px 0;">${percentage}%</p>
+                <p style="font-size: 16px; color: #666;">${percentage >= 80 ? '⭐ Luar biasa!' : percentage >= 60 ? '👍 Bagus!' : '💪 Terus berlatih!'}</p>
+                <div style="display:flex; gap:12px; justify-content:center; margin-top:20px; flex-wrap:wrap;">
+                    <button class="btn-next" style="margin:0;" onclick="startGame()">🔄 Main Lagi</button>
+                    <a href="../" class="btn-outline">Kembali</a>
+                </div>
+            `;
+        }
+
+        startGame();
+    </script>
+</body>
+</html>

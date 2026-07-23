@@ -131,3 +131,26 @@ Game pilihan ganda matematika (penjumlahan & perkalian) untuk anak SD.
 **Audio:** BGM via `<audio>` tag (Wikimedia), SFX benar/salah via Web Audio API oscillator. Toggle dengan `toggleAudio()`.
 
 **Dependensi eksternal:** `canvas-confetti` (CDN jsdelivr), avatar dari `api.dicebear.com`.
+
+---
+
+## Section: `games/logika`
+
+Game logika/computational thinking untuk anak SD kelas 1-2, **berjenjang dari pemula sampai mahir**. Hub (`games/logika/index.html`) mengelompokkan kartu materi ke dalam 3 tier (`.tier` blocks dengan `.tier-badge` pemula/menengah/mahir), bukan grid datar seperti hub kategori lain — lihat juga struktur jenjang di `kurikulum.md` bagian "9. Logika".
+
+**Pola desain umum semua game logika:** aksen ungu (`#9b59b6`), top-bar (Back + judul + tombol audio 🔊), `.container` card putih dengan shadow, skor "Skor: x/y", tombol "Soal Berikutnya" → layar `showFinish()` (persentase + emoji semangat + Main Lagi/Kembali). Audio SFX (correct/wrong/finish, kadang tick) via Web Audio API oscillator inline — pola identik di semua file, tidak diimpor dari file bersama. Semua CSS & JS inline dalam satu `index.html` per game, tidak ada file terpisah atau bank soal JSON eksternal.
+
+**Pola soal:** kebanyakan game gabungkan bank soal *curated* (array literal tangan) + soal *procedural* (generator acak) yang di-shuffle jadi satu ronde — lihat `pola-urutan` dan `tebak-berikutnya` untuk contoh pola `CURATED_COUNT`/`PROCEDURAL_COUNT`.
+
+### Jenjang 1 — Pemula (mengenali & mencocokkan)
+- `cocokkan-pasangan/` — memory matching, mengenali kesamaan bentuk/warna
+- `pola-urutan/` — melanjutkan pola berulang sederhana (AB-AB, AAB); soal curated + 3 generator prosedural (`genCyclePattern`, `genAABPattern`, `genArithmeticPattern`)
+
+### Jenjang 2 — Menengah (memprediksi & menyusun urutan)
+- `tebak-berikutnya/` — melengkapi pola/barisan yang lebih variatif
+- `labirin-kode/` — sequencing dasar: susun chip perintah (⬆️⬇️⬅️➡️) lewat `program-row`, jalankan (`runProgram()`) untuk menuntun 🤖 ke 🏁 di `board` grid. Labirin dibuat prosedural (`generateMaze` + BFS `isSolvable`) sehingga selalu bisa diselesaikan; kesulitan naik per soal dalam 1 ronde (`mazeParamsForIndex`: Mudah → Sedang → Sulit, 8 soal/ronde)
+
+### Jenjang 3 — Mahir (loop, sebab-akibat, klasifikasi bertingkat)
+- `labirin-kode-lanjutan/` — sama seperti `labirin-kode` tapi labirin lebih besar (5x5–6x6, lebih banyak rintangan) dan menambah chip `🔁` (repeat): mengulang arah nyata terakhir (`resolvedDirAt()`), pengenalan konsep loop lewat "ulangi langkah terakhir"
+- `jika-maka/` — pilihan ganda sebab-akibat: kondisi (`rule-condition`) → pilih tindakan yang tepat. Bank soal `categories` (cuaca, lalu-lintas, rutinitas, perasaan, aman-sehat), pengecoh diambil dari kategori yang sama (`buildQuestion()`) supaya tetap masuk akal tapi salah konteks
+- `klasifikasi/` — "Cari yang Beda": 5 item ditampilkan, 4 dari kelompok sama + 1 beda (kategori benda via `genCategoryQuestion()`, atau warna via `genColorQuestion()`), anak tap yang beda sendiri
