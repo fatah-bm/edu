@@ -5,47 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nilai Tempat</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="../../../assets/shared.css">
     <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
-            background: #f0f8ff;
-            margin: 0;
-            padding: 16px;
-            text-align: center;
-            min-height: 100vh;
-            user-select: none;
-            -webkit-user-select: none;
-        }
+        body { user-select: none; -webkit-user-select: none; }
         .screen { display: none; }
         .screen.active { display: block; }
-
-        /* ── Top bar ── */
-        .top-bar {
-            display: flex;
-            align-items: center;
-            max-width: 500px;
-            margin: 0 auto 12px auto;
-            gap: 8px;
-        }
-        .btn-nav {
-            background: #c7ceea;
-            border: none;
-            border-radius: 12px;
-            padding: 8px 16px;
-            font-family: inherit;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 0 #a0a8c8;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            text-decoration: none;
-            color: #333;
-            display: inline-block;
-        }
-        .btn-nav:active { transform: translateY(4px); box-shadow: none; }
-        h1 { color: #ff6b6b; font-size: 24px; margin: 0; flex: 1; }
 
         /* ── Card box ── */
         .box {
@@ -57,6 +21,12 @@
             box-shadow: 0 4px 14px rgba(0,0,0,0.1);
         }
         .box-title { color: #2c3e50; font-size: 18px; margin: 0 0 18px 0; }
+
+        /* ── In-wizard "go back a step" button (not the top-bar Back) ── */
+        .btn-wizard-back {
+            display: inline-block;
+            margin: 0 0 14px 0;
+        }
 
         /* ── Level buttons ── */
         .btn-level {
@@ -127,7 +97,7 @@
             font-weight: bold;
             padding: 0 4px;
         }
-        #score-display { color: #ff6b6b; font-size: 18px; }
+        #score-display { color: var(--accent); font-size: 18px; }
 
         /* ── Speak button ── */
         .btn-speak {
@@ -193,16 +163,6 @@
         .pv-box.correct { border-color: #27ae60 !important; background: #d5f5e3 !important; border-width: 4px !important; border-style: solid !important; }
         .pv-box.wrong   { border-color: #e74c3c !important; background: #fde8e8 !important; border-width: 4px !important; border-style: solid !important; }
 
-        /* ── Feedback ── */
-        #feedback {
-            font-size: 20px;
-            font-weight: bold;
-            min-height: 28px;
-            margin-bottom: 14px;
-        }
-        #feedback.correct { color: #27ae60; }
-        #feedback.wrong   { color: #e74c3c; }
-
         /* ── Digit tray ── */
         .tray-label { font-size: 13px; color: #aaa; margin-bottom: 8px; }
         .digit-tray {
@@ -244,7 +204,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
             font-size: 24px;
             font-weight: bold;
             color: #2c3e50;
@@ -276,7 +235,7 @@
         }
 
         /* ── Result screen ── */
-        .result-score { font-size: 64px; font-weight: bold; color: #ff6b6b; line-height: 1; margin-bottom: 4px; }
+        .result-score { font-size: 64px; font-weight: bold; color: var(--accent); line-height: 1; margin-bottom: 4px; }
         .result-label { font-size: 13px; color: #aaa; margin-bottom: 6px; }
         .result-summary { font-size: 17px; color: #555; margin-bottom: 18px; }
         .review-list { text-align: left; margin-bottom: 20px; }
@@ -299,23 +258,24 @@
             border: none;
             border-radius: 15px;
             cursor: pointer;
-            background: #ff6b6b;
+            background: var(--accent);
             color: white;
-            box-shadow: 0 5px 0 #cc4444;
+            box-shadow: 0 5px 0 var(--accent-shadow);
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
         }
         .btn-again:active { transform: translateY(5px); box-shadow: none; }
     </style>
 </head>
-<body>
+<body data-theme="math">
+<div id="topbar"></div>
+<script src="../../../assets/shared.js"></script>
+<script>
+    initTopBar({ title: 'Nilai Tempat', backHref: '../', homeHref: '../../../', audio: true });
+</script>
 
 <!-- ════════ Screen: Mode ════════ -->
 <div id="screen-mode" class="screen active">
-    <div class="top-bar">
-        <a class="btn-nav" href="../">⬅ Back</a>
-        <h1>Nilai Tempat</h1>
-    </div>
     <div class="box">
         <p class="box-title">Pilih mode:</p>
         <button class="btn-level btn-santai" onclick="selectMode('santai')">
@@ -331,11 +291,8 @@
 
 <!-- ════════ Screen: Level ════════ -->
 <div id="screen-level" class="screen">
-    <div class="top-bar">
-        <button class="btn-nav" onclick="showScreen('screen-mode')">⬅ Back</button>
-        <h1>Nilai Tempat</h1>
-    </div>
     <div class="box">
+        <button class="btn-action btn-secondary btn-wizard-back" onclick="showScreen('screen-mode')">⬅ Ganti Mode</button>
         <p class="box-title">Pilih level:</p>
         <button class="btn-level btn-mudah" onclick="selectLevel('mudah')">
             😊 Mudah
@@ -354,19 +311,16 @@
 
 <!-- ════════ Screen: Game ════════ -->
 <div id="screen-game" class="screen">
-    <div class="top-bar">
-        <button class="btn-nav" onclick="showScreen('screen-level')">⬅ Back</button>
-        <h1>Nilai Tempat</h1>
-    </div>
     <div id="score-bar">
         <span id="q-progress">Soal 1</span>
         <span>Skor: <span id="score-display">0</span></span>
     </div>
     <div class="box">
+        <button class="btn-action btn-secondary btn-wizard-back" onclick="showScreen('screen-level')">⬅ Ganti Level</button>
         <button class="btn-speak" onclick="speakAgain()">🔊 Dengar lagi</button>
         <p class="game-instruction">Susun angkanya ke kotak yang tepat!</p>
         <div class="pv-table" id="pv-table"></div>
-        <div id="feedback"></div>
+        <div class="feedback" id="feedback"></div>
         <p class="tray-label">Pilih angka:</p>
         <div class="digit-tray" id="digit-tray"></div>
         <button class="btn-check" id="btn-check" onclick="checkAnswer()" disabled>
@@ -378,11 +332,8 @@
 
 <!-- ════════ Screen: Result ════════ -->
 <div id="screen-result" class="screen">
-    <div class="top-bar">
-        <a class="btn-nav" href="../">⬅ Back</a>
-        <h1>Hasil</h1>
-    </div>
     <div class="box">
+        <p class="box-title">🎉 Hasil</p>
         <div class="result-score" id="final-score">0</div>
         <p class="result-label">poin</p>
         <p class="result-summary" id="result-summary"></p>
@@ -649,12 +600,12 @@ function checkAnswer() {
 function setFeedback(msg, cls) {
     const el = document.getElementById('feedback');
     el.textContent = msg;
-    el.className = cls;
+    el.className = 'feedback ' + cls;
 }
 function clearFeedback() {
     const el = document.getElementById('feedback');
     el.textContent = '';
-    el.className = '';
+    el.className = 'feedback';
 }
 function updateScoreBar() {
     const progress = gameMode === 'soal10' ? `Soal ${questionNum}/10` : `Soal ${questionNum}`;
@@ -663,70 +614,11 @@ function updateScoreBar() {
 }
 
 // ── Speech ────────────────────────────────────────────────────────────────────
-let _idVoice = null;
-
-function _loadIdVoice() {
-    const voices = window.speechSynthesis.getVoices();
-    _idVoice = voices.find(v => v.lang === 'id-ID') ||
-               voices.find(v => v.lang.startsWith('id')) ||
-               null;
-}
-
-// Voices load asynchronously on first page load
-if (window.speechSynthesis.onvoiceschanged !== undefined) {
-    window.speechSynthesis.onvoiceschanged = _loadIdVoice;
-}
-_loadIdVoice();
-
 function speakNumber(n) {
-    const text = numberToWords(n);
-    function doSpeak() {
-        const utter = new SpeechSynthesisUtterance(text);
-        utter.lang = 'id-ID';
-        utter.rate = 0.85;
-        utter.pitch = 1.1;
-        if (_idVoice) utter.voice = _idVoice;
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(utter);
-    }
-    // If voices haven't loaded yet, wait for them
-    if (!_idVoice && window.speechSynthesis.getVoices().length === 0) {
-        const prev = window.speechSynthesis.onvoiceschanged;
-        window.speechSynthesis.onvoiceschanged = () => {
-            _loadIdVoice();
-            window.speechSynthesis.onvoiceschanged = prev || null;
-            doSpeak();
-        };
-    } else {
-        doSpeak();
-    }
+    speak(numberToWords(n));
 }
 function speakAgain() {
     if (currentQ.number !== undefined) speakNumber(currentQ.number);
-}
-
-// ── SFX ───────────────────────────────────────────────────────────────────────
-function playSfx(type) {
-    try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        if (type === 'correct') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(600, ctx.currentTime);
-            osc.frequency.linearRampToValueAtTime(1000, ctx.currentTime + 0.3);
-        } else {
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(300, ctx.currentTime);
-            osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.3);
-        }
-        gain.gain.setValueAtTime(0.3, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.3);
-    } catch (e) {}
 }
 
 // ── Result ────────────────────────────────────────────────────────────────────

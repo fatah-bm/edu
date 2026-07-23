@@ -5,19 +5,152 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Game Pintar Matematika</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="../../../assets/shared.css">
+    <style>
+        body { user-select: none; -webkit-user-select: none; }
 
-    <div class="header-bar">
-        <div class="avatar-container">
-            <img src="https://api.dicebear.com/7.x/fun-emoji/svg?seed=Jagoan&backgroundColor=b6e3f4" class="avatar" alt="Karakter Laki-laki">
-            <img src="https://api.dicebear.com/7.x/fun-emoji/svg?seed=Bintang&backgroundColor=ffdfbf" class="avatar" alt="Karakter Perempuan">
-        </div>
-        <a class="btn-home" href="../../../">Home</a>
-        <button class="btn-audio" id="audio-toggle" onclick="toggleAudio()">🔊</button>
+        .avatar-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        .avatar {
+            width: 60px;
+            height: 60px;
+            background-color: white;
+            border-radius: 50%;
+            border: 3px solid #ffd166;
+        }
+
+        .box-container {
+            background-color: white;
+            border-radius: 20px;
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border: 5px solid #4ecdc4;
+        }
+        .btn {
+            font-family: inherit;
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 20px;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:active { transform: translateY(5px); box-shadow: none; }
+
+        /* Palet Warna Tombol */
+        .btn-add { background-color: #ff6b6b; }
+        .btn-mul { background-color: #4ecdc4; }
+        .btn-mix { background-color: #9b59b6; }
+        .btn-mode-prac { background-color: #3498db; }
+        .btn-mode-chal { background-color: #e67e22; }
+        .btn-lvl-easy { background-color: #2ecc71; }
+        .btn-lvl-med { background-color: #f39c12; }
+        .btn-lvl-hard { background-color: #e74c3c; }
+        .btn-find { background-color: #8e44ad; }
+        /* In-wizard "go back a step" / "stop & see result" button — distinct from
+           the top-bar's .btn-back (parent-folder nav), so it gets its own class. */
+        .btn-wizard-back { background-color: #c7ceea; color: #333; font-size: 16px; margin-top: 15px; }
+
+        #countdown-number {
+            font-size: 96px;
+            font-weight: bold;
+            color: var(--accent);
+            line-height: 1.1;
+            margin: 10px 0;
+        }
+        #countdown-info {
+            font-size: 15px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        #question {
+            font-size: 45px;
+            font-weight: bold;
+            margin: 15px 0;
+            color: #1a535c;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        .btn-option {
+            background-color: #ffd166;
+            color: #333;
+            font-size: 32px;
+            height: 80px;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            box-shadow: 0 5px 0 #d4a942;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-option:active { transform: translateY(5px); box-shadow: none; }
+
+        #score-board {
+            font-size: 18px;
+            color: #555;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px dashed #eee;
+            padding-bottom: 10px;
+        }
+        .info-badge { background: #eee; padding: 5px 10px; border-radius: 10px; font-size: 14px; }
+        #timer-badge { background: #ffeaa7; color: #d35400; font-weight: bold; }
+
+        /* Style Layar Review */
+        .review-container {
+            max-height: 300px;
+            overflow-y: auto;
+            text-align: left;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border: 2px solid #ddd;
+        }
+        .review-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+        .review-item:last-child { border-bottom: none; }
+        .review-item.correct { border-left: 5px solid #2ecc71; }
+        .review-item.warning { border-left: 5px solid #f39c12; }
+        .review-item.wrong { border-left: 5px solid #e74c3c; background-color: #ffeaea; }
+    </style>
+</head>
+<body data-theme="math">
+
+    <div id="topbar"></div>
+    <script src="../../../assets/shared.js"></script>
+    <script>
+        initTopBar({ title: 'Matematika Seru!', backHref: '../', homeHref: '../../../', audio: true });
+    </script>
+
+    <div class="avatar-container">
+        <img src="https://api.dicebear.com/7.x/fun-emoji/svg?seed=Jagoan&backgroundColor=b6e3f4" class="avatar" alt="Karakter Laki-laki">
+        <img src="https://api.dicebear.com/7.x/fun-emoji/svg?seed=Bintang&backgroundColor=ffdfbf" class="avatar" alt="Karakter Perempuan">
     </div>
-    <h1>Matematika Seru!</h1>
 
     <audio id="bgm" src="https://upload.wikimedia.org/wikipedia/commons/3/34/8_Bit_Surf.ogg" loop></audio>
 
@@ -33,7 +166,7 @@
         <button class="btn btn-mul" onclick="selectOperation('mul')">✖️ Perkalian</button>
         <button class="btn btn-mix" onclick="selectOperation('mix')">🎲 Campuran</button>
         <button class="btn btn-find" onclick="selectOperation('find')">🔍 Cari Yang Hilang</button>
-        <button class="btn btn-back" onclick="showScreen('screen-type')">⬅️ Kembali</button>
+        <button class="btn btn-wizard-back" onclick="showScreen('screen-type')">⬅️ Kembali</button>
     </div>
 
     <div id="screen-countdown" class="box-container" style="display: none;">
@@ -47,7 +180,7 @@
         <button class="btn btn-lvl-easy" onclick="selectLevel('easy')">🌟 Mudah</button>
         <button class="btn btn-lvl-med" onclick="selectLevel('medium')">⭐⭐ Sedang</button>
         <button class="btn btn-lvl-hard" onclick="selectLevel('hard')">🔥 Sulit</button>
-        <button class="btn btn-back" onclick="showScreen('screen-operation')">⬅️ Kembali</button>
+        <button class="btn btn-wizard-back" onclick="showScreen('screen-operation')">⬅️ Kembali</button>
     </div>
 
     <div id="screen-game" class="box-container" style="display: none;">
@@ -56,9 +189,9 @@
             <span class="info-badge" id="timer-badge" style="display:none;">⏱️ <span id="time-left">120</span>s</span>
             <span>Skor: <strong id="score">0</strong></span>
         </div>
-        
+
         <div id="question">1 + 1 = ?</div>
-        
+
         <div class="options-grid">
             <button class="btn-option" onclick="checkAnswer(0)" id="opt0">1</button>
             <button class="btn-option" onclick="checkAnswer(1)" id="opt1">2</button>
@@ -66,8 +199,8 @@
             <button class="btn-option" onclick="checkAnswer(3)" id="opt3">4</button>
         </div>
 
-        <div id="feedback"></div>
-        <button class="btn btn-back" onclick="endGameEarly()">⏹️ Berhenti & Lihat Hasil</button>
+        <div id="feedback" class="feedback"></div>
+        <button class="btn btn-wizard-back" onclick="endGameEarly()">⏹️ Berhenti & Lihat Hasil</button>
     </div>
 
     <div id="screen-result" class="box-container" style="display: none;">
@@ -79,6 +212,293 @@
         <button class="btn btn-add" onclick="showScreen('screen-type')" style="margin-top: 20px;">Main Lagi</button>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // Variabel Game
+        let gameType = '';
+        let currentOperation = '';
+        let currentLevel = '';
+        let score = 0;
+        let isProcessing = false;
+
+        // Variabel Tracking & Timer
+        let timerInterval;
+        let timeLeft = 120;
+        let gameHistory = [];
+        let currentQuestionData = {}; // Object untuk melacak state soal yang sedang aktif
+
+        // ── BGM (musik latar) ────────────────────────────────────────────────
+        // SFX + mute toggle datang dari shared.js (window.playSfx / window.toggleAudio /
+        // window.isAudioEnabled) — di sini kita hanya menyambungkan BGM ke toggle itu.
+        const bgm = document.getElementById('bgm');
+        bgm.volume = 0.3;
+
+        const _sharedToggleAudio = window.toggleAudio;
+        window.toggleAudio = function () {
+            const enabled = _sharedToggleAudio();
+            if (enabled) {
+                bgm.play().catch(e => console.log('BGM play error:', e));
+            } else {
+                bgm.pause();
+            }
+            return enabled;
+        };
+
+        function playTick() {
+            const urgent = timeLeft <= 10;
+            playSfx(urgent ? 'wrong' : 'tick');
+        }
+
+        // Navigasi UI
+        function showScreen(screenId) {
+            const screens = ['screen-type', 'screen-operation', 'screen-level', 'screen-countdown', 'screen-game', 'screen-result'];
+            screens.forEach(id => document.getElementById(id).style.display = 'none');
+            document.getElementById(screenId).style.display = 'block';
+        }
+
+        function selectType(type) {
+            if (window.isAudioEnabled) bgm.play().catch(e => console.log(e));
+            gameType = type;
+            showScreen('screen-operation');
+        }
+
+        function selectOperation(op) {
+            currentOperation = op;
+            let title = op === 'add' ? 'Penjumlahan' : (op === 'mul' ? 'Perkalian' : (op === 'mix' ? 'Campuran' : 'Cari Yang Hilang'));
+            document.getElementById('level-title').innerText = `Level ${title}:`;
+            showScreen('screen-level');
+        }
+
+        function selectLevel(lvl) {
+            currentLevel = lvl;
+            score = 0;
+            gameHistory = [];
+            document.getElementById('score').innerText = score;
+
+            let opName = currentOperation === 'add' ? '➕' : (currentOperation === 'mul' ? '✖️' : (currentOperation === 'mix' ? '🎲' : '🔍'));
+            let lvlName = lvl === 'easy' ? 'Mudah' : (lvl === 'medium' ? 'Sedang' : 'Sulit');
+            document.getElementById('game-info').innerText = `${opName} | ${lvlName}`;
+
+            if (gameType === 'challenge') {
+                document.getElementById('timer-badge').style.display = 'inline-block';
+                showCountdown();
+            } else {
+                document.getElementById('timer-badge').style.display = 'none';
+                showScreen('screen-game');
+                generateQuestion();
+            }
+        }
+
+        function showCountdown() {
+            showScreen('screen-countdown');
+            document.getElementById('countdown-info').innerText =
+                `⏱️ Tantangan 2 Menit  ·  ${document.getElementById('game-info').innerText}`;
+
+            const el = document.getElementById('countdown-number');
+            el.innerText = '3';
+            setTimeout(() => { el.innerText = '2'; }, 1000);
+            setTimeout(() => { el.innerText = '1'; }, 2000);
+            setTimeout(() => { el.innerText = 'Mulai! 🚀'; }, 3000);
+            setTimeout(() => {
+                showScreen('screen-game');
+                generateQuestion();
+                startTimer();
+            }, 3700);
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 120;
+            document.getElementById('time-left').innerText = timeLeft;
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('time-left').innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    playSfx('finish');
+                    finishGame();
+                } else {
+                    playTick();
+                }
+            }, 1000);
+        }
+
+        function endGameEarly() {
+            clearInterval(timerInterval);
+            // Jika soal saat ini pernah dijawab salah tapi belum terselesaikan sebelum di-stop
+            if (!currentQuestionData.solved && currentQuestionData.mistakes > 0) {
+                gameHistory.push({ ...currentQuestionData });
+            }
+            finishGame();
+        }
+
+        function generateQuestion() {
+            isProcessing = false;
+            document.getElementById('feedback').innerText = '';
+
+            let num1, num2;
+            let activeOp = currentOperation;
+            const isFindMode = activeOp === 'find';
+            if (activeOp === 'mix' || activeOp === 'find') {
+                activeOp = Math.random() > 0.5 ? 'add' : 'mul';
+            }
+
+            let symbol = activeOp === 'add' ? '+' : 'x';
+            let result = 0;
+
+            if (activeOp === 'add') {
+                if (currentLevel === 'easy') {
+                    num1 = Math.floor(Math.random() * 5) + 1;
+                    num2 = Math.floor(Math.random() * 5) + 1;
+                } else if (currentLevel === 'medium') {
+                    num1 = Math.floor(Math.random() * 10) + 1;
+                    num2 = Math.floor(Math.random() * 10) + 1;
+                } else {
+                    num1 = Math.floor(Math.random() * 11) + 5;
+                    num2 = Math.floor(Math.random() * 11) + 5;
+                }
+                result = num1 + num2;
+            }
+            else if (activeOp === 'mul') {
+                if (currentLevel === 'easy') {
+                    const easyPool = [1, 2, 10];
+                    num1 = Math.floor(Math.random() * 10) + 1;
+                    num2 = easyPool[Math.floor(Math.random() * easyPool.length)];
+                } else if (currentLevel === 'medium') {
+                    num1 = Math.floor(Math.random() * 10) + 1;
+                    num2 = Math.floor(Math.random() * 5) + 1;
+                } else {
+                    num1 = Math.floor(Math.random() * 10) + 1;
+                    num2 = Math.floor(Math.random() * 5) + 6;
+                }
+                if (Math.random() > 0.5) { let temp = num1; num1 = num2; num2 = temp; }
+                result = num1 * num2;
+            }
+
+            // Tentukan posisi tanda tanya: 0=kiri, 1=kanan, 2=hasil
+            let qDisplay, trueAns;
+            if (isFindMode) {
+                const unknownPos = Math.floor(Math.random() * 3);
+                if (unknownPos === 0) {
+                    qDisplay = `? ${symbol} ${num2} = ${result}`;
+                    trueAns = num1;
+                } else if (unknownPos === 1) {
+                    qDisplay = `${num1} ${symbol} ? = ${result}`;
+                    trueAns = num2;
+                } else {
+                    qDisplay = `${num1} ${symbol} ${num2} = ?`;
+                    trueAns = result;
+                }
+            } else {
+                qDisplay = `${num1} ${symbol} ${num2} = ?`;
+                trueAns = result;
+            }
+
+            currentQuestionData = {
+                qDisplay: qDisplay,
+                qText: `${num1} ${symbol} ${num2} = ${result}`,
+                trueAns: trueAns,
+                mistakes: 0,
+                solved: false
+            };
+
+            document.getElementById('question').innerText = currentQuestionData.qDisplay;
+
+            let answers = [trueAns];
+            while (answers.length < 4) {
+                let offset = Math.floor(Math.random() * 9) - 4;
+                if (offset === 0) offset = 2;
+                let wrongAnswer = trueAns + offset;
+                if (wrongAnswer < 0) wrongAnswer = trueAns + 3;
+                if (!answers.includes(wrongAnswer)) answers.push(wrongAnswer);
+            }
+            answers.sort(() => Math.random() - 0.5);
+
+            for (let i = 0; i < 4; i++) {
+                let btn = document.getElementById(`opt${i}`);
+                btn.innerText = answers[i];
+                btn.value = answers[i];
+                btn.style.backgroundColor = '#ffd166';
+            }
+        }
+
+        function checkAnswer(index) {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            const selectedBtn = document.getElementById(`opt${index}`);
+            const selectedAnswer = parseInt(selectedBtn.value);
+            const feedbackEl = document.getElementById('feedback');
+
+            const isCorrect = (selectedAnswer === currentQuestionData.trueAns);
+
+            if (isCorrect) {
+                currentQuestionData.solved = true;
+                gameHistory.push({ ...currentQuestionData }); // Simpan state akhir soal
+
+                playSfx('correct');
+                feedbackEl.innerText = 'Benar! 🎉';
+                feedbackEl.className = 'feedback correct';
+                selectedBtn.style.backgroundColor = '#2ecc71';
+                score += 10;
+
+                confetti({ particleCount: 50, spread: 50, origin: { y: 0.8 } });
+                document.getElementById('score').innerText = score;
+
+                let delay = gameType === 'challenge' ? 600 : 1200;
+                setTimeout(() => {
+                    if(gameType === 'challenge' && timeLeft <= 0) return;
+                    generateQuestion(); // Soal diganti hanya saat jawaban benar
+                }, delay);
+
+            } else {
+                currentQuestionData.mistakes++; // Catat jumlah kesalahan
+
+                playSfx('wrong');
+                feedbackEl.innerText = 'Salah! 🤔';
+                feedbackEl.className = 'feedback wrong';
+                selectedBtn.style.backgroundColor = '#e74c3c';
+
+                if (score > 0) score -= 5;
+                document.getElementById('score').innerText = score;
+
+                // Soal tidak diganti. Tombol di-reset agar anak bisa mencoba lagi
+                setTimeout(() => {
+                    selectedBtn.style.backgroundColor = '#ffd166';
+                    feedbackEl.innerText = '';
+                    feedbackEl.className = 'feedback';
+                    isProcessing = false;
+                }, 1000);
+            }
+        }
+
+        function finishGame() {
+            document.getElementById('final-score').innerText = score;
+            const reviewContainer = document.getElementById('review-list');
+            reviewContainer.innerHTML = '';
+
+            if(gameHistory.length === 0) {
+                reviewContainer.innerHTML = '<div class="review-item">Belum ada soal yang diselesaikan.</div>';
+            } else {
+                gameHistory.forEach(item => {
+                    const div = document.createElement('div');
+
+                    if (item.solved && item.mistakes === 0) {
+                        div.className = 'review-item correct';
+                        div.innerHTML = `<b>${item.qDisplay.replace('?', `<span style="background:#e67e22;color:white;border-radius:8px;padding:1px 8px;">${item.trueAns}</span>`)}</b><br><small style="color: #2ecc71;">✅ Sempurna</small>`;
+                    } else if (item.solved && item.mistakes > 0) {
+                        div.className = 'review-item warning';
+                        div.innerHTML = `<b>${item.qDisplay.replace('?', `<span style="background:#e67e22;color:white;border-radius:8px;padding:1px 8px;">${item.trueAns}</span>`)}</b><br><small style="color: #d35400;">⚠️ Benar setelah salah ${item.mistakes} kali</small>`;
+                    } else if (!item.solved) {
+                        div.className = 'review-item wrong';
+                        div.innerHTML = `<b>${item.qDisplay.replace('?', `<span style="background:#e67e22;color:white;border-radius:8px;padding:1px 8px;">${item.trueAns}</span>`)}</b><br><small style="color: #c0392b;">❌ Dihentikan (Sempat salah ${item.mistakes} kali)</small>`;
+                    }
+
+                    reviewContainer.appendChild(div);
+                });
+            }
+            showScreen('screen-result');
+        }
+    </script>
 </body>
 </html>

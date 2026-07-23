@@ -4,38 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Conversation</title>
+    <link rel="stylesheet" href="../../../assets/shared.css">
     <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
-            background-color: #f0f8ff;
-            margin: 0;
-            padding: 16px;
-            text-align: center;
-        }
-        .top-bar {
-            display: flex;
-            align-items: center;
-            max-width: 560px;
-            margin: 0 auto 20px auto;
-        }
-        .btn-back, .btn-home {
-            border: none;
-            border-radius: 12px;
-            padding: 8px 14px;
-            font-family: inherit;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            text-decoration: none;
-            color: #333;
-        }
-        .btn-back { background-color: #c7ceea; box-shadow: 0 4px 0 #a0a8c8; }
-        .btn-home { background-color: #ffd166; box-shadow: 0 4px 0 #ccaa33; }
-        .btn-back:active, .btn-home:active { transform: translateY(4px); box-shadow: none; }
-        h1 { color: #ff6b6b; font-size: 26px; margin: 0; flex: 1; }
         .grid {
             display: flex;
             flex-wrap: wrap;
@@ -44,44 +14,27 @@
             max-width: 560px;
             margin: 0 auto;
         }
-        .card {
-            background-color: white;
-            border: 4px solid #9b59b6;
-            border-radius: 20px;
-            padding: 20px 16px;
-            width: 160px;
-            text-align: center;
-            text-decoration: none;
-            cursor: pointer;
-            box-shadow: 0 6px 0 #7d3c98;
-            transition: transform 0.1s, box-shadow 0.1s;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .card:active { transform: translateY(6px); box-shadow: none; }
         .card .emoji { font-size: 52px; display: block; margin-bottom: 10px; }
-        .card p { font-size: 16px; font-weight: bold; color: #2c3e50; margin: 0; }
-        .card small { display: block; font-size: 12px; color: #999; margin-top: 4px; }
     </style>
 </head>
-<body>
-    <div class="top-bar">
-        <a class="btn-back" href="../">⬅ Back</a>
-        <h1>Conversation</h1>
-        <a class="btn-home" href="../../../">Home</a>
-    </div>
+<body data-theme="english">
+    <div id="topbar"></div>
+    <script src="../../../assets/shared.js"></script>
+    <script>
+        initTopBar({ title: 'Conversation', backHref: '../', homeHref: '../../../' });
+    </script>
     <div class="grid">
-        <a class="card" href="./greetings/">
+        <a class="card card--hub" href="./greetings/">
             <span class="emoji">👋</span>
             <p>Greetings</p>
             <small>Hello & goodbye</small>
         </a>
-        <a class="card" href="./do-you-have/">
+        <a class="card card--hub" href="./do-you-have/">
             <span class="emoji">🤔</span>
             <p>Do You Have?</p>
             <small>Yes, I do / No, I don't</small>
         </a>
-        <a class="card" href="./what-time/">
+        <a class="card card--hub" href="./what-time/">
             <span class="emoji">🕐</span>
             <p>What Time Is It?</p>
             <small>O'clock</small>

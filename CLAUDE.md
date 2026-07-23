@@ -10,11 +10,15 @@ Koleksi game edukasi berbasis web (HTML/CSS/JS murni) untuk anak-anak, di-host v
 
 ```
 index.html                        ← root hub (pilih pelajaran)
+assets/
+  shared.css                      ← font, palet, komponen bersama, background dekoratif
+  shared.js                       ← top-bar, audio, speech id-ID, util bersama
+  bg-pattern.svg                  ← artwork background dekoratif
 games/
   math/
     index.html                    ← hub topik math
     tambahkali/
-      index.html / style.css / script.js
+      index.html
   english/
     index.html                    ← hub topik english
     words/
@@ -26,10 +30,46 @@ games/
 URL GitHub Pages mengikuti struktur folder:
 `https://fatah-bm.github.io/edu/games/<kategori>/<materi>/`
 
+## Shared assets (`assets/`)
+
+Seluruh halaman (root dan semua game) memakai sistem CSS/JS terpusat di `assets/`, dibangun dari desain root `index.html` ("Belajar Yuk" — font Nunito, palet oranye/biru/kuning):
+
+- **`assets/shared.css`** — font Nunito (600/800/900), CSS custom properties (`--primary`, `--secondary`, `--accent-yellow`, `--bg-color`, `--text-color`, `--card-bg`), reset dasar, komponen `.top-bar`/`.btn-back`/`.btn-home`/`.btn-audio`, keluarga `.card` (`.card--hub` untuk kartu hub besar 160px, `.card--leaf` untuk kartu topik/kosakata lebih kecil, keduanya pakai `var(--accent)`/`var(--accent-shadow)`), `.container`, `.controls-row`, `.btn-next`/`.btn-outline`/`.btn-action`/`.btn-run`/`.btn-secondary`, `.feedback`/`.score`, `.program-row`/`.chip` (+ state `active`/`done`/`error` dan `@keyframes shake`), `.pagination`/`.btn-page`/`.page-indicator`, dan layer background dekoratif otomatis (`body::before` + `bg-pattern.svg`).
+- **`assets/shared.js`** — `initTopBar(opts)` (generate top-bar), `playSfx(type)` (`correct`/`wrong`/`finish`/`tick`, Web Audio oscillator), `toggleAudio()`/`isAudioEnabled` (persisten via `localStorage`, otomatis meredam speech saat dimatikan), `speak(text)`/`speakSequence(texts, card)` (Web Speech API khusus `id-ID`), `shuffleArray(arr)` (Fisher-Yates).
+
+**Wajib di-link di setiap halaman baru**, dengan prefix relatif sesuai kedalaman folder (sama seperti prefix link Home yang sudah ada — root=`assets/`, `games/<kategori>/`=`../../assets/`, `games/<kategori>/<game>/`=`../../../assets/`, `games/english/words/<topik>/`=`../../../../assets/`):
+```html
+<link rel="stylesheet" href="../../../assets/shared.css">
+```
+
+**Kapan pakai shared vs. inline page-specific:** style/logic generik lintas game (top-bar, kartu, tombol next, feedback, skor, pagination, chip, audio, shuffle, speech id-ID) HARUS pakai shared — jangan didefinisikan ulang lokal. Style/logic spesifik untuk mekanik satu game (papan labirin, canvas tracing, drag digit, dialog bubble bahasa Inggris, generator soal, bank kata/soal) tetap inline `<style>`/`<script>` di halaman itu sendiri.
+
+Catatan: speech bahasa Inggris (`games/english/words/*`, `games/english/conversation/*`) TIDAK pakai `speak()`/`speakSequence()` bersama (yang khusus `id-ID`) — halaman-halaman itu punya fungsi speech lokal sendiri (`en-US`, atau mekanisme dua penutur `voiceA`/`voiceB` untuk dialog), tapi tetap wajib diawali `if (!isAudioEnabled) return;` supaya toggle suara di top-bar ikut meredam speech tersebut.
+
+### Top-bar standar
+
+Setiap halaman leaf/game (punya interaksi nyata) WAJIB top-bar dengan Back + Home + toggle suara, dipasang lewat `initTopBar()` — bukan markup statis:
+```html
+<div id="topbar"></div>
+<script src="../../../assets/shared.js"></script>
+<script>
+  initTopBar({ title: 'Judul Game', backHref: '../', homeHref: '../../../', audio: true });
+</script>
+```
+Halaman hub (navigasi murni, tanpa suara) pakai `initTopBar({ title, backHref, homeHref })` tanpa key `audio` → hanya tombol Back+Home yang muncul. Root `index.html` tidak pakai top-bar sama sekali (dia sudah "home", pakai `.navbar` sendiri, hanya link `shared.css` untuk font/palet/background).
+
+### Tema aksen kategori
+
+Setiap halaman berskala kategori (hub materi, hub sub-topik, halaman game) WAJIB `<body data-theme="math|english|logika|indonesia">` — jangan redefine `--accent` sendiri per halaman, keempat pasang warna (math=merah `#ff6b6b`, english=teal `#4ecdc4`, logika=ungu `#9b59b6`, indonesia=hijau `#2ecc71`) sudah didefinisikan sekali di `shared.css`. Halaman yang menampilkan banyak kategori sekaligus di satu grid (hanya root `index.html`) pakai modifier `.card.math`/`.card.english`/`.card.logika`/`.card.indonesia` sebagai gantinya.
+
+### Background dekoratif
+
+Semua halaman otomatis dapat layer background pastel lembut (awan/bintang/bentuk geometris, opacity rendah) dari `shared.css` — tidak perlu markup HTML tambahan. Jangan menimpa `body::before` atau menambah elemen dekoratif lokal lain; game yang butuh area bermain polos cukup dibungkus container putih solid (`.container`/`.card`/`<canvas>`) seperti pola yang sudah ada — background memang didesain untuk hanya terlihat di margin, bukan di bawah elemen interaktif.
+
 ### Pola navigasi hub
 
 Setiap halaman hub menggunakan pola kartu yang sama:
-- **Root** (`index.html`): tanpa tombol Back, warna aksen per mata pelajaran (math=merah `#ff6b6b`, english=teal `#4ecdc4`)
+- **Root** (`index.html`): tanpa tombol Back, warna aksen per mata pelajaran (math=merah `#ff6b6b`, english=teal `#4ecdc4`, logika=ungu `#9b59b6`, indonesia=hijau `#2ecc71`)
 - **Hub mata pelajaran** (`games/<kategori>/index.html`): tombol Back ke `../../`
 - **Hub materi** (`games/<kategori>/<materi>/index.html`): tombol Back ke `../`
 - **Halaman konten** (`games/<kategori>/<materi>/<topik>/index.html`): tombol Back ke `../`
@@ -47,7 +87,7 @@ Seluruh permainan di project ini ditargetkan untuk perangkat **mobile** (HP/tabl
 - **`user-select: none`** pada kartu/chip/elemen draggable.
 - **Target sentuh ≥ 40–50px** — tombol dan kartu jangan terlalu kecil untuk jari anak-anak.
 - **Feedback tekan:** `:active { transform: translateY(Npx); box-shadow: none; }` di semua tombol/kartu bergaya "3D press".
-- **Font:** `'Comic Sans MS', 'Chalkboard SE', sans-serif` (kecuali root `index.html` yang sudah pakai skema font sendiri).
+- **Font:** `'Nunito', sans-serif` (weight 600 body, 800 tombol/heading, 900 penekanan) di SEMUA halaman termasuk root — sudah otomatis lewat `assets/shared.css`, jangan override lokal.
 
 Ini bukan checklist opsional — game baru yang belum diuji/dioptimalkan untuk sentuhan mobile dianggap belum selesai.
 
@@ -120,7 +160,7 @@ Jumlah kotak ditentukan otomatis oleh jumlah digit angka (`getPositions()` baca 
 
 **Interaksi:** drag kartu digit dari tray → lepas di atas kotak posisi. Tap kotak yang sudah terisi → kosongkan. Implementasi via Pointer Events (`pointerdown`/`pointermove`/`pointerup`) agar bekerja di mouse & touchscreen.
 
-**Speech:** `numberToWords(n)` mengubah angka ke kata Indonesia ("sebelas", "dua puluh tiga", "seratus lima belas"), diucapkan via Web Speech API (`lang: 'id-ID'`, `rate: 0.85`). Voice Indonesia dipilih eksplisit dari `speechSynthesis.getVoices()`.
+**Speech:** `numberToWords(n)` mengubah angka ke kata Indonesia ("sebelas", "dua puluh tiga", "seratus lima belas"), diucapkan lewat `speakNumber(n) { speak(numberToWords(n)); }` — memakai `speak()` dari `assets/shared.js` (voice `id-ID` sudah dipilih otomatis di sana), bukan implementasi lokal.
 
 **Scoring:** +10 benar, -5 salah (minimum 0). Kotak yang benar dikunci (`lockedBoxes`), kotak salah direset untuk dicoba ulang. 10 soal per sesi.
 
@@ -134,7 +174,7 @@ Game pilihan ganda matematika (penjumlahan & perkalian) untuk anak SD.
 
 **Flow layar:** `screen-type` → `screen-operation` → `screen-level` → `screen-game` → `screen-result`
 
-**State game** dikelola via variabel global di `script.js`:
+**State game** dikelola via variabel global di `<script>` halaman (sudah inline, mengikuti konvensi game lain — dulu sempat pakai `style.css`/`script.js` eksternal, sudah dimigrasikan):
 - `gameType`: `'practice'` | `'challenge'` — practice tanpa timer, challenge 120 detik
 - `currentOperation`: `'add'` | `'mul'` | `'mix'`
 - `currentLevel`: `'easy'` | `'medium'` | `'hard'`
@@ -143,7 +183,7 @@ Game pilihan ganda matematika (penjumlahan & perkalian) untuk anak SD.
 
 **Scoring:** +10 jawaban benar, -5 jawaban salah (minimum 0). Soal tidak diganti saat salah — anak bisa mencoba lagi sampai benar.
 
-**Audio:** BGM via `<audio>` tag (Wikimedia), SFX benar/salah via Web Audio API oscillator. Toggle dengan `toggleAudio()`.
+**Audio:** BGM via `<audio>` tag (Wikimedia) tetap lokal; SFX benar/salah & toggle mute pakai `playSfx()`/`toggleAudio()`/`isAudioEnabled` dari `assets/shared.js`.
 
 **Dependensi eksternal:** `canvas-confetti` (CDN jsdelivr), avatar dari `api.dicebear.com`.
 
@@ -153,7 +193,7 @@ Game pilihan ganda matematika (penjumlahan & perkalian) untuk anak SD.
 
 Game logika/computational thinking untuk anak SD kelas 1-2, **berjenjang dari pemula sampai mahir**. Hub (`games/logika/index.html`) mengelompokkan kartu materi ke dalam 3 tier (`.tier` blocks dengan `.tier-badge` pemula/menengah/mahir), bukan grid datar seperti hub kategori lain — lihat juga struktur jenjang di `kurikulum.md` bagian "9. Logika".
 
-**Pola desain umum semua game logika:** aksen ungu (`#9b59b6`), top-bar (Back + judul + tombol audio 🔊), `.container` card putih dengan shadow, skor "Skor: x/y", tombol "Soal Berikutnya" → layar `showFinish()` (persentase + emoji semangat + Main Lagi/Kembali). Audio SFX (correct/wrong/finish, kadang tick) via Web Audio API oscillator inline — pola identik di semua file, tidak diimpor dari file bersama. Semua CSS & JS inline dalam satu `index.html` per game, tidak ada file terpisah atau bank soal JSON eksternal.
+**Pola desain umum semua game logika:** aksen ungu (`#9b59b6` via `data-theme="logika"`), top-bar + tombol audio dari `initTopBar()`, `.container` card putih dengan shadow, skor "Skor: x/y", tombol "Soal Berikutnya" → layar `showFinish()` (persentase + emoji semangat + Main Lagi/Kembali). Audio SFX (correct/wrong/finish, kadang tick) via `playSfx()` dari `assets/shared.js`. Bank soal & mekanik game (curated + generator prosedural) tetap inline per game, tidak ada file terpisah/JSON eksternal.
 
 **Pola soal:** kebanyakan game gabungkan bank soal *curated* (array literal tangan) + soal *procedural* (generator acak) yang di-shuffle jadi satu ronde — lihat `pola-urutan` dan `tebak-berikutnya` untuk contoh pola `CURATED_COUNT`/`PROCEDURAL_COUNT`.
 
@@ -176,7 +216,7 @@ Game logika/computational thinking untuk anak SD kelas 1-2, **berjenjang dari pe
 
 Game membaca & menulis Bahasa Indonesia untuk anak SD kelas 1-2, sejalan dengan `kurikulum.md` bab 1 kelas 1 ("Bunyi Apa Itu?" — mengenal huruf, bunyi, ejaan dasar; vokal & konsonan). Hub (`games/indonesia/index.html`) adalah grid datar (flat) seperti `games/english` — tanpa layer "materi" tambahan — 3 kartu langsung ke game.
 
-**Pola desain umum:** aksen hijau (`#2ecc71`, shadow `#27ae60`), top-bar (Back + judul), pola kartu & tombol identik dengan game lain (border 4px, box-shadow 6px, `:active` translateY). Semua CSS & JS inline dalam satu `index.html` per game, tidak ada file terpisah.
+**Pola desain umum:** aksen hijau (`#2ecc71` via `data-theme="indonesia"`), top-bar + tombol audio dari `initTopBar()`, kartu pakai `.card--hub`/`.card--leaf` dari `assets/shared.css`. Bank soal/kata dan mekanik game (tracing kanvas, susun suku kata) tetap inline per game.
 
 - `mengenal-huruf/` — pengenalan huruf A-Z: grid kartu (kapital+kecil, mirip `games/english/words/alphabet`) dengan contoh kata + emoji per huruf, dibedakan visual vokal vs konsonan (badge warna). Tap kartu → ucapkan huruf lalu contoh kata via Web Speech API `id-ID` (`speakSequence()`, dirangkai lewat `utterance.onend` — bukan dua panggilan `speak()` beruntun, karena tiap panggilan memanggil `speechSynthesis.cancel()`).
 - `menulis-huruf/` — melacak (tracing) huruf kapital A-Z di atas kanvas: dua `<canvas>` bertumpuk (`guideCanvas` = huruf pudar terisi penuh, `drawCanvas` = lapisan goresan pengguna), digambar via Pointer Events (`touch-action:none`, `setPointerCapture`). Validasi "cakupan kasar" dengan `coverageFraction()`: downsample kedua kanvas ke grid 48×48 lalu bandingkan sel-per-sel dengan toleransi dilatasi 1-sel tetangga, ambang lulus ~55% — pendekatan ini menghindari masalah `devicePixelRatio` karena grid selalu berukuran tetap. Tombol Hapus/Cek/Lanjut; gagal cek tidak menghapus goresan (anak bisa menambah tinta), retry diperbolehkan. Skor membedakan lulus langsung (+10) vs setelah retry (+5), 26 huruf/sesi, `showFinish()` di akhir.

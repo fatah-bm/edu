@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+    <defs>
+        <path id="sparkle" d="M0,-22 C2,-7 7,-2 22,0 C7,2 2,7 0,22 C-2,7 -7,2 -22,0 C-7,-2 -2,-7 0,-22 Z"/>
+        <g id="cloud">
+            <ellipse cx="0" cy="22" rx="62" ry="22"/>
+            <circle cx="-32" cy="6" r="26"/>
+            <circle cx="10" cy="-6" r="34"/>
+            <circle cx="48" cy="10" r="22"/>
+        </g>
+    </defs>
+
+    <!-- Awan biru lembut di pojok -->
+    <use href="#cloud" x="120" y="90" fill="#00A8FF" fill-opacity="0.28"/>
+    <use href="#cloud" x="1080" y="130" fill="#00A8FF" fill-opacity="0.22" transform="scale(0.8)" transform-origin="1080 130"/>
+    <use href="#cloud" x="90" y="680" fill="#00A8FF" fill-opacity="0.22" transform="scale(0.85)" transform-origin="90 680"/>
+
+    <!-- Bintang/kilau kuning tersebar -->
+    <use href="#sparkle" x="420" y="60" fill="#FFD200" fill-opacity="0.4" transform="scale(1.3)" transform-origin="420 60"/>
+    <use href="#sparkle" x="1150" y="420" fill="#FFD200" fill-opacity="0.35" transform="scale(1.6)" transform-origin="1150 420"/>
+    <use href="#sparkle" x="60" y="380" fill="#FFD200" fill-opacity="0.35" transform="scale(1.1)" transform-origin="60 380"/>
+    <use href="#sparkle" x="640" y="760" fill="#FFD200" fill-opacity="0.35" transform="scale(1.2)" transform-origin="640 760"/>
+    <use href="#sparkle" x="1000" y="90" fill="#FFD200" fill-opacity="0.3" transform="scale(0.9)" transform-origin="1000 90"/>
+
+    <!-- Bentuk oranye lembut -->
+    <rect x="-40" y="-30" width="80" height="60" rx="30" ry="30" fill="#FF7A00" fill-opacity="0.22" transform="translate(960,700) rotate(18)"/>
+    <rect x="-30" y="-22" width="60" height="44" rx="22" ry="22" fill="#FF7A00" fill-opacity="0.22" transform="translate(70,120) rotate(-12)"/>
+    <circle cx="1130" cy="700" r="28" fill="#FF7A00" fill-opacity="0.18"/>
+</svg>

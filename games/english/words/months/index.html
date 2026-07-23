@@ -4,54 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Months of the Year</title>
+    <link rel="stylesheet" href="../../../../assets/shared.css">
     <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
-            background-color: #f0f8ff;
-            margin: 0;
-            padding: 15px;
-            text-align: center;
-        }
-        .top-bar {
-            display: flex;
-            align-items: center;
-            max-width: 560px;
-            margin: 0 auto 10px auto;
-        }
-        .btn-back {
-            background-color: #c7ceea;
-            border: none;
-            border-radius: 12px;
-            padding: 8px 16px;
-            font-family: inherit;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 0 #a0a8c8;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            text-decoration: none;
-            color: #333;
-        }
-        .btn-back:active { transform: translateY(4px); box-shadow: none; }
-        .btn-home {
-            background-color: #ffd166;
-            border: none;
-            border-radius: 12px;
-            padding: 8px 16px;
-            font-family: inherit;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 0 #ccaa33;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            text-decoration: none;
-            color: #333;
-        }
-        .btn-home:active { transform: translateY(4px); box-shadow: none; }
-        h1 { color: #ff6b6b; font-size: 28px; margin: 0; flex: 1; }
         .subtitle { color: #777; font-size: 15px; margin: 0 0 16px 0; }
         .grid {
             display: grid;
@@ -60,18 +14,8 @@
             max-width: 560px;
             margin: 0 auto;
         }
-        .card {
-            background-color: white;
-            border-radius: 14px;
-            padding: 12px 6px;
-            cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.1s;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
-        .card:active { transform: translateY(5px); box-shadow: none !important; }
-        .card.playing { opacity: 0.75; }
+        /* Warna tiap kartu unik per bulan (inline), jadi playing pakai opacity, bukan border shared */
+        .card--leaf.playing { opacity: 0.75; }
         .badge {
             display: block;
             width: 60px;
@@ -84,40 +28,15 @@
             color: white;
             letter-spacing: 0.5px;
         }
-        .card p { font-size: 14px; font-weight: bold; color: #2c3e50; margin: 0; }
-        .pagination {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            max-width: 560px;
-            margin: 20px auto 0 auto;
-        }
-        .btn-page {
-            background-color: #4ecdc4;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 10px 22px;
-            font-family: inherit;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 0 #36b2aa;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .btn-page:active { transform: translateY(4px); box-shadow: none; }
-        .btn-page:disabled { background-color: #ccc; box-shadow: 0 4px 0 #aaa; cursor: default; }
-        .page-indicator { font-size: 16px; color: #555; font-weight: bold; min-width: 80px; }
+        .card p { font-size: 14px; }
     </style>
 </head>
-<body>
-    <div class="top-bar">
-        <a class="btn-back" href="../">⬅ Back</a>
-        <h1>Months of the Year</h1>
-        <a class="btn-home" href="../../../../">Home</a>
-    </div>
+<body data-theme="english">
+    <div id="topbar"></div>
+    <script src="../../../../assets/shared.js"></script>
+    <script>
+        initTopBar({ title: 'Months of the Year', backHref: '../', homeHref: '../../../../', audio: true });
+    </script>
     <p class="subtitle">How to pronounce these months? Tap a card!</p>
 
     <div class="grid" id="grid"></div>
@@ -153,7 +72,7 @@
             const pageItems = months.slice(currentPage * PER_PAGE, (currentPage + 1) * PER_PAGE);
 
             grid.innerHTML = pageItems.map(m => `
-                <div class="card" data-word="${m.word}"
+                <div class="card card--leaf" data-word="${m.word}"
                      style="border: 3px solid ${m.color}; box-shadow: 0 5px 0 ${m.shadow};">
                     <span class="badge" style="background-color: ${m.color};">${m.abbr}</span>
                     <p>${m.word}</p>
@@ -176,6 +95,7 @@
         }
 
         function speak(word, card) {
+            if (!isAudioEnabled) return;
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(word);
             utterance.lang = 'en-US';

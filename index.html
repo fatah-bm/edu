@@ -4,31 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Belajar Yuk - Permainan Edukasi Anak SD</title>
-    <!-- Font Google: Nunito (Ramah & Mudah Dibaca Anak-Anak) -->
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/shared.css">
 
     <style>
-        :root {
-            --primary: #FF7A00;      /* Orange Ceria */
-            --primary-hover: #E06B00;
-            --secondary: #00A8FF;    /* Biru Cerah */
-            --secondary-hover: #008AD4;
-            --accent-yellow: #FFD200;
-            --bg-color: #EBF8FF;     /* Biru Muda Lembut */
-            --text-color: #2D3748;
-            --card-bg: #FFFFFF;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Nunito', sans-serif;
-        }
+        * { margin: 0; padding: 0; }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            padding: 0;
             line-height: 1.5;
             display: flex;
             flex-direction: column;
@@ -200,57 +182,6 @@
             justify-content: center;
         }
 
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 20px;
-            padding: 24px 20px;
-            width: 170px;
-            text-align: center;
-            text-decoration: none;
-            cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.1s;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
-        .card:active { transform: translateY(6px); box-shadow: none !important; }
-        .card.math {
-            border: 4px solid #ff6b6b;
-            box-shadow: 0 6px 0 #cc4444;
-        }
-        .card.english {
-            border: 4px solid #4ecdc4;
-            box-shadow: 0 6px 0 #36b2aa;
-        }
-        .card.logika {
-            border: 4px solid #9b59b6;
-            box-shadow: 0 6px 0 #7a3f88;
-        }
-        .card.indonesia {
-            border: 4px solid #2ecc71;
-            box-shadow: 0 6px 0 #27ae60;
-        }
-        .card img {
-            width: 72px;
-            height: 72px;
-            object-fit: contain;
-            display: block;
-            margin: 0 auto 12px auto;
-        }
-        .card p {
-            font-size: 20px;
-            font-weight: 900;
-            color: #2c3e50;
-            margin: 0;
-        }
-        .card small {
-            display: block;
-            font-size: 12px;
-            color: #999;
-            margin-top: 4px;
-            font-weight: 600;
-        }
-
         /* --- FOOTER --- */
         footer {
             background-color: #FFFFFF;
@@ -364,25 +295,25 @@
         <p class="pilih-subtitle">Yuk mulai belajar sambil bermain!</p>
 
         <div class="grid">
-            <a class="card math" href="./games/math/">
+            <a class="card card--hub math" href="./games/math/">
                 <img src="https://img.icons8.com/color/96/math.png" alt="Math"
                      onerror="this.style.display='none'">
                 <p>Matematika</p>
                 <small>Berhitung seru</small>
             </a>
-            <a class="card english" href="./games/english/">
+            <a class="card card--hub english" href="./games/english/">
                 <img src="https://img.icons8.com/color/96/reading.png" alt="English"
                      onerror="this.style.display='none'">
                 <p>English</p>
                 <small>Kosakata & pelafalan</small>
             </a>
-            <a class="card logika" href="./games/logika/">
+            <a class="card card--hub logika" href="./games/logika/">
                 <img src="https://img.icons8.com/color/96/brain.png" alt="Logika"
                      onerror="this.style.display='none'">
                 <p>Logika</p>
                 <small>Asah otak & pikiran</small>
             </a>
-            <a class="card indonesia" href="./games/indonesia/">
+            <a class="card card--hub indonesia" href="./games/indonesia/">
                 <img src="https://img.icons8.com/color/96/abc.png" alt="Bahasa Indonesia"
                      onerror="this.style.display='none'">
                 <p>Bahasa Indonesia</p>
