@@ -306,6 +306,7 @@
         let robotPos = { r: 0, c: 0 };
         let solved = false;
         let running = false;
+        let questionScored = false;
 
         function shuffleArray(arr) {
             const a = [...arr];
@@ -475,7 +476,10 @@
                 </div>
                 <div class="feedback" id="feedback"></div>
                 <div class="score" id="score">Skor: 0/0</div>
-                <button class="btn-next" id="nextBtn" disabled onclick="nextQuestion()">Soal Berikutnya</button>
+                <div class="controls-row" id="resultActions" style="display:none;">
+                    <button class="btn-action btn-secondary" id="retryBtn" onclick="retryQuestion()">🔁 Ulangi Lagi</button>
+                    <button class="btn-next" id="nextBtn" onclick="nextQuestion()">Soal Berikutnya</button>
+                </div>
             `;
         }
 
@@ -606,12 +610,16 @@
             const feedback = document.getElementById('feedback');
 
             if (reachedGoal) {
-                feedback.textContent = '🎉 Sampai tujuan!';
+                feedback.textContent = `🎉 Sampai tujuan! Berhasil dalam ${program.length} langkah.`;
                 feedback.className = 'feedback correct';
                 solved = true;
-                score++;
+                if (!questionScored) {
+                    questionScored = true;
+                    score++;
+                    updateScore();
+                }
                 playSfx('correct');
-                updateScore();
+                document.getElementById('resultActions').style.display = 'flex';
                 const nextBtn = document.getElementById('nextBtn');
                 nextBtn.disabled = false;
                 nextBtn.textContent = currentQuestion === roundMazes.length - 1 ? 'Selesai' : 'Soal Berikutnya';
@@ -633,6 +641,19 @@
             document.getElementById('score').textContent = `Skor: ${score}/${currentQuestion + 1}`;
         }
 
+        function retryQuestion() {
+            if (running) return;
+            program = [];
+            robotPos = { ...maze.start };
+            solved = false;
+            running = false;
+            renderBoard();
+            renderProgramRow();
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('resultActions').style.display = 'none';
+            setControlsEnabled(true);
+        }
+
         function startGame() {
             roundMazes = [];
             for (let i = 0; i < ROUND_SIZE; i++) {
@@ -651,6 +672,7 @@
             robotPos = { ...maze.start };
             solved = false;
             running = false;
+            questionScored = false;
 
             renderBoard();
             renderProgramRow();
@@ -658,6 +680,7 @@
             document.getElementById('levelInfo').textContent =
                 `Level ${currentQuestion + 1}/${roundMazes.length} · ${maze.label} · Kotak ${maze.size}x${maze.size}${maze.walls.size ? ` · ${maze.walls.size} rintangan` : ''}`;
             setControlsEnabled(true);
+            document.getElementById('resultActions').style.display = 'none';
             document.getElementById('nextBtn').disabled = true;
             document.getElementById('nextBtn').textContent = 'Soal Berikutnya';
             updateScore();

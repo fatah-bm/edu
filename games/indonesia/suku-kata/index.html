@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Suku Kata</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e8f4f8 100%);
+            margin: 0;
+            padding: 16px;
+            text-align: center;
+            min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .top-bar {
+            display: flex;
+            align-items: center;
+            max-width: 460px;
+            margin: 0 auto 20px auto;
+        }
+        .btn-back {
+            background-color: #c7ceea;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #a0a8c8;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            text-decoration: none;
+            color: #333;
+        }
+        .btn-back:active { transform: translateY(4px); box-shadow: none; }
+        .btn-home {
+            background-color: #ffd166;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #ccaa33;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            text-decoration: none;
+            color: #333;
+        }
+        .btn-home:active { transform: translateY(4px); box-shadow: none; }
+        h1 {
+            color: #2ecc71;
+            font-size: 26px;
+            margin: 0;
+            flex: 1;
+        }
+        .container {
+            max-width: 460px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        .level-info {
+            font-size: 15px;
+            color: #999;
+            margin: 0 0 12px 0;
+            font-weight: bold;
+        }
+        .word-emoji {
+            font-size: 64px;
+            margin: 0 0 16px 0;
+            line-height: 1;
+        }
+        .program-row, .bank {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: flex-start;
+            min-height: 52px;
+            margin: 0 0 16px 0;
+            padding: 8px;
+            border-radius: 12px;
+        }
+        .program-row {
+            background: #f5f0fa;
+        }
+        .program-row:empty::before {
+            content: 'Ketuk suku kata di bawah untuk menyusun kata';
+            color: #aaa;
+            font-size: 13px;
+            align-self: center;
+        }
+        .bank {
+            background: #eafaf1;
+        }
+        .bank:empty::before {
+            content: 'Semua suku kata sudah dipakai';
+            color: #aaa;
+            font-size: 13px;
+            align-self: center;
+        }
+        .chip {
+            min-width: 44px;
+            height: 44px;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 2px solid #2ecc71;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, transform 0.15s;
+        }
+        .chip:active { transform: translateY(2px); }
+        .chip.error {
+            background: #fdecea;
+            border-color: #f44336;
+            animation: shake 0.4s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+        .controls-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 0 0 16px 0;
+        }
+        .btn-action {
+            border: none;
+            border-radius: 12px;
+            padding: 10px 18px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-run {
+            background: #2ecc71;
+            color: white;
+            box-shadow: 0 4px 0 #27ae60;
+        }
+        .btn-run:active { transform: translateY(4px); box-shadow: none; }
+        .btn-run:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            box-shadow: 0 4px 0 #999;
+        }
+        .feedback {
+            font-size: 18px;
+            margin: 8px 0;
+            font-weight: bold;
+            min-height: 26px;
+        }
+        .feedback.correct { color: #4caf50; }
+        .feedback.wrong { color: #f44336; }
+        .score {
+            font-size: 16px;
+            color: #666;
+            margin: 12px 0;
+        }
+        .btn-next {
+            background-color: #2ecc71;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #27ae60;
+            color: white;
+            margin: 4px 0;
+        }
+        .btn-next:active { transform: translateY(4px); box-shadow: none; }
+        .btn-outline {
+            display: inline-block;
+            padding: 12px 24px;
+            background: white;
+            color: #2ecc71;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: bold;
+            border: 3px solid #2ecc71;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a class="btn-back" href="../">⬅ Back</a>
+        <h1>Suku Kata</h1>
+        <a class="btn-home" href="../../../">Home</a>
+    </div>
+
+    <div class="container" id="container">
+        <p class="level-info" id="levelInfo">Kata 1/8</p>
+        <div class="word-emoji" id="wordEmoji"></div>
+        <div class="program-row" id="susunanRow"></div>
+        <div class="bank" id="bank"></div>
+        <div class="controls-row">
+            <button class="btn-action btn-run" id="cekBtn" disabled onclick="checkAnswer()">✅ Cek</button>
+        </div>
+        <div class="feedback" id="feedback"></div>
+        <div class="score" id="score">Skor: 0/0</div>
+        <div class="controls-row" id="resultActions" style="display:none;">
+            <button class="btn-next" id="nextBtn" onclick="nextQuestion()">Soal Berikutnya</button>
+        </div>
+    </div>
+
+    <script>
+        const ROUND_SIZE = 8;
+        const WORD_BANK = [
+            { word: 'ibu',        syllables: ['i', 'bu'],              emoji: '👩' },
+            { word: 'kakek',      syllables: ['ka', 'kek'],            emoji: '👴' },
+            { word: 'nenek',      syllables: ['ne', 'nek'],            emoji: '👵' },
+            { word: 'bola',       syllables: ['bo', 'la'],             emoji: '⚽' },
+            { word: 'buku',       syllables: ['bu', 'ku'],             emoji: '📖' },
+            { word: 'sapi',       syllables: ['sa', 'pi'],             emoji: '🐄' },
+            { word: 'topi',       syllables: ['to', 'pi'],             emoji: '🎩' },
+            { word: 'kaki',       syllables: ['ka', 'ki'],             emoji: '🦶' },
+            { word: 'mata',       syllables: ['ma', 'ta'],             emoji: '👁️' },
+            { word: 'pisang',     syllables: ['pi', 'sang'],           emoji: '🍌' },
+            { word: 'kelinci',    syllables: ['ke', 'lin', 'ci'],      emoji: '🐰' },
+            { word: 'matahari',   syllables: ['ma', 'ta', 'ha', 'ri'], emoji: '☀️' },
+            { word: 'sepatu',     syllables: ['se', 'pa', 'tu'],       emoji: '👟' },
+            { word: 'kupukupu',   syllables: ['ku', 'pu', 'ku', 'pu'], emoji: '🦋' },
+            { word: 'lalulintas', syllables: ['la', 'lu', 'lin', 'tas'], emoji: '🚦' }
+        ];
+
+        let roundWords = [];
+        let currentQuestion = 0;
+        let score = 0;
+        let currentWord = null;
+        let bankChips = [];
+        let placedOrder = [];
+        let checking = false;
+
+        function shuffleArray(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function tapBank(id) {
+            if (checking) return;
+            if (placedOrder.includes(id)) return;
+            placedOrder.push(id);
+            renderAll();
+        }
+
+        function tapSusunan(id) {
+            if (checking) return;
+            placedOrder = placedOrder.filter(x => x !== id);
+            renderAll();
+        }
+
+        function renderAll() {
+            renderBank();
+            renderSusunan();
+            document.getElementById('cekBtn').disabled = placedOrder.length !== currentWord.syllables.length;
+        }
+
+        function renderBank() {
+            const bank = document.getElementById('bank');
+            bank.innerHTML = '';
+            bankChips.forEach(chip => {
+                if (placedOrder.includes(chip.id)) return;
+                const el = document.createElement('div');
+                el.className = 'chip';
+                el.textContent = chip.text;
+                el.onclick = () => tapBank(chip.id);
+                bank.appendChild(el);
+            });
+        }
+
+        function renderSusunan() {
+            const row = document.getElementById('susunanRow');
+            row.innerHTML = '';
+            placedOrder.forEach(id => {
+                const chip = bankChips.find(c => c.id === id);
+                const el = document.createElement('div');
+                el.className = 'chip';
+                el.textContent = chip.text;
+                el.onclick = () => tapSusunan(id);
+                row.appendChild(el);
+            });
+        }
+
+        function checkAnswer() {
+            if (checking) return;
+            const correct = placedOrder.length === currentWord.syllables.length &&
+                             placedOrder.every((id, i) => id === i);
+            const feedback = document.getElementById('feedback');
+
+            if (correct) {
+                checking = true;
+                score++;
+                updateScore();
+                playSfx('correct');
+                confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+                speak(currentWord.word);
+                feedback.textContent = `🎉 Benar! "${currentWord.word}"`;
+                feedback.className = 'feedback correct';
+                document.getElementById('resultActions').style.display = 'flex';
+                document.getElementById('nextBtn').textContent =
+                    currentQuestion === roundWords.length - 1 ? 'Selesai' : 'Soal Berikutnya';
+            } else {
+                document.querySelectorAll('#susunanRow .chip').forEach(c => c.classList.add('error'));
+                playSfx('wrong');
+                feedback.textContent = '🤔 Belum tepat urutannya, coba lagi!';
+                feedback.className = 'feedback wrong';
+                setTimeout(() => {
+                    placedOrder = [];
+                    renderAll();
+                    feedback.textContent = '';
+                    feedback.className = 'feedback';
+                }, 900);
+            }
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = `Skor: ${score}/${currentQuestion + 1}`;
+        }
+
+        function loadQuestion() {
+            currentWord = roundWords[currentQuestion];
+            bankChips = shuffleArray(currentWord.syllables.map((text, id) => ({ id, text })));
+            placedOrder = [];
+            checking = false;
+
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('feedback').className = 'feedback';
+            document.getElementById('wordEmoji').textContent = currentWord.emoji;
+            document.getElementById('levelInfo').textContent = `Kata ${currentQuestion + 1}/${roundWords.length}`;
+            document.getElementById('resultActions').style.display = 'none';
+            document.getElementById('nextBtn').textContent = 'Soal Berikutnya';
+            renderAll();
+            updateScore();
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion >= roundWords.length) {
+                showFinish();
+            } else {
+                loadQuestion();
+            }
+        }
+
+        function startGame() {
+            roundWords = shuffleArray(WORD_BANK).slice(0, ROUND_SIZE);
+            currentQuestion = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function showFinish() {
+            playSfx('correct');
+            const container = document.getElementById('container');
+            const percentage = Math.round((score / roundWords.length) * 100);
+            container.innerHTML = `
+                <h2 style="color: #2ecc71; margin-bottom: 20px;">🎉 Selesai!</h2>
+                <p style="font-size: 24px; color: #2c3e50; margin: 20px 0;">Skor Akhir: <strong>${score}/${roundWords.length}</strong></p>
+                <p style="font-size: 18px; color: #666; margin: 20px 0;">${percentage}%</p>
+                <p style="font-size: 16px; color: #666;">${percentage >= 80 ? '⭐ Luar biasa!' : percentage >= 60 ? '👍 Bagus!' : '💪 Terus berlatih!'}</p>
+                <div style="display:flex; gap:12px; justify-content:center; margin-top:20px; flex-wrap:wrap;">
+                    <button class="btn-next" style="margin:0;" onclick="startGame()">🔄 Main Lagi</button>
+                    <a href="../" class="btn-outline">Kembali</a>
+                </div>
+            `;
+        }
+
+        // ── Speech (Bahasa Indonesia) ───────────────────────────────────────
+        let _idVoice = null;
+        function _loadIdVoice() {
+            const voices = window.speechSynthesis.getVoices();
+            _idVoice = voices.find(v => v.lang === 'id-ID') ||
+                       voices.find(v => v.lang.startsWith('id')) ||
+                       null;
+        }
+        if (window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = _loadIdVoice;
+        }
+        _loadIdVoice();
+
+        function speak(text) {
+            function doSpeak() {
+                const utter = new SpeechSynthesisUtterance(text);
+                utter.lang = 'id-ID';
+                utter.rate = 0.85;
+                utter.pitch = 1.1;
+                if (_idVoice) utter.voice = _idVoice;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utter);
+            }
+            if (!_idVoice && window.speechSynthesis.getVoices().length === 0) {
+                const prev = window.speechSynthesis.onvoiceschanged;
+                window.speechSynthesis.onvoiceschanged = () => {
+                    _loadIdVoice();
+                    window.speechSynthesis.onvoiceschanged = prev || null;
+                    doSpeak();
+                };
+            } else {
+                doSpeak();
+            }
+        }
+
+        // ── SFX (Web Audio API oscillator) ──────────────────────────────────
+        function playSfx(type) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, ctx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(1000, ctx.currentTime + 0.3);
+                } else {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(300, ctx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.3);
+                }
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.3);
+            } catch (e) {}
+        }
+
+        startGame();
+    </script>
+</body>
+</html>

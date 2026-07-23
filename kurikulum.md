@@ -64,6 +64,18 @@ Kelas 1 dan 2 SD termasuk dalam **Fase A**. Pembelajaran bersifat tematik-integr
 | 7 | Budi Pekerti | Fabel; nilai moral dari cerita; menceritakan ulang dengan kalimat sendiri |
 | 8 | Karya Imajinatif | Menulis kreatif; puisi anak; ekspresi lisan di depan kelas |
 
+### Pemetaan ke Game (`games/indonesia`)
+
+Selaras dengan bab 1 kelas 1 ("Bunyi Apa Itu?") — fokus awal pada pengenalan huruf, bunyi, dan ejaan dasar sebelum masuk ke kalimat/cerita (bab 2 dst., di luar cakupan sesi ini).
+
+| Jenjang | Fokus Kemampuan | Materi (game) | Status |
+|---|---|---|---|
+| **1. Pengenalan** | Mengenali bentuk huruf, bunyi, & bedanya vokal/konsonan | Mengenal Huruf — kartu huruf A-Z + contoh kata & suara | Sudah ada |
+| **2. Motorik** | Melatih menulis bentuk huruf dengan tangan | Menulis Huruf — melacak huruf di kanvas sentuh | Sudah ada |
+| **3. Ejaan** | Menyusun suku kata jadi kata | Suku Kata — susun suku kata sesuai gambar | Sudah ada |
+
+**Belum tercakup (di luar sesi ini):** membaca kata/kalimat penuh, menulis kalimat, tanda baca, fluency membaca — akan menyusul di jenjang lanjutan.
+
 ---
 
 ## 2. Matematika
@@ -329,7 +341,7 @@ Prioritas materi berdasarkan kebutuhan dan yang sudah ada di repo:
 | Sudah ada | Matematika | Nilai tempat (satuan/puluhan/ratusan), tambah & kali |
 | Sudah ada | Bahasa Inggris | Kosakata (tubuh, keluarga, angka, alfabet, hari, bulan), greetings, waktu |
 | Sudah ada | Logika | Pemula–Menengah: Pola & Urutan, Cocokkan Pasangan, Tebak Berikutnya, Labirin Kode. Mahir: Labirin Kode Lanjutan, Jika-Maka, Cari yang Beda |
-| Belum ada | Bahasa Indonesia | Huruf, suku kata, membaca, menulis |
+| Sudah ada | Bahasa Indonesia | Pengenalan huruf & vokal/konsonan (Mengenal Huruf), menulis huruf via tracing kanvas (Menulis Huruf), menyusun suku kata (Suku Kata) |
 | Belum ada | Matematika | Urutan bilangan, bangun datar, pengukuran, uang |
 | Belum ada | IPAS | Hewan, tumbuhan, cuaca, tubuh |
 | Belum ada | Pendidikan Pancasila | Simbol Pancasila, aturan |
