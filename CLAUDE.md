@@ -201,6 +201,18 @@ Game pilihan ganda matematika (penjumlahan, pengurangan, perkalian, pembagian) u
 
 ---
 
+## Game: `games/math/uang`
+
+Game pilihan ganda kenali & hitung total uang Rupiah untuk anak SD, materi Kelas 2 Bab 7 "Pengukuran" di `kurikulum.md`. Struktur layar & pola mode/level meniru `nilai-tempat` (bukan `tambahkali`): `screen-mode` (Santai vs 10 Soal) → `screen-level` (Mudah/Sedang/Sulit) → `screen-game` → `screen-result`, dengan `showScreen()`/review-list/scoring yang polanya sama persis.
+
+**Uang bergaya CSS, bukan gambar asli** — `MONEY` array berisi 8 denominasi (koin Rp100/200/500/1000, uang kertas Rp1.000/2.000/5.000/10.000), masing-masing dirender sebagai `<div>` bulat (koin, border putus-putus) atau persegi (uang kertas, ada aksen lingkaran di kanan meniru watermark), warna beda per nominal via class `.coin-<value>`/`.note-<value>`. Ini pilihan sengaja untuk menghindari isu hak cipta gambar uang asli, sekaligus konsisten dengan pola badge warna di `days`/`months`.
+
+**Soal per level**: `mudah` = 1 uang (tanya nilainya), `sedang` = 2 uang, `sulit` = 3 uang (tanya totalnya) — dijumlah dari item acak `pickMoney()`. Pengecoh jawaban (`WRONG_OFFSETS`) memakai offset senilai pecahan uang asli (±100/200/500/1000/2000), bukan angka acak sembarang, supaya pilihan yang salah tetap terlihat masuk akal sebagai nominal uang.
+
+**Dependensi eksternal:** `canvas-confetti` (CDN jsdelivr).
+
+---
+
 ## Section: `games/logika`
 
 Game logika/computational thinking untuk anak SD kelas 1-2, **berjenjang dari pemula sampai mahir**. Hub (`games/logika/index.html`) mengelompokkan kartu materi ke dalam 3 tier (`.tier` blocks dengan `.tier-badge` pemula/menengah/mahir), bukan grid datar seperti hub kategori lain — lihat juga struktur jenjang di `kurikulum.md` bagian "9. Logika".

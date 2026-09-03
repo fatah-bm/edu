@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Uang</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="../../../assets/shared.css">
+    <style>
+        body { user-select: none; -webkit-user-select: none; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* ── Card box ── */
+        .box {
+            background: white;
+            border-radius: 20px;
+            padding: 22px 18px;
+            max-width: 500px;
+            margin: 0 auto 14px auto;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+        }
+        .box-title { color: #2c3e50; font-size: 18px; margin: 0 0 18px 0; }
+
+        .btn-wizard-back { display: inline-block; margin: 0 0 14px 0; }
+
+        /* ── Mode / level buttons ── */
+        .btn-level {
+            display: block;
+            width: 100%;
+            padding: 14px 18px;
+            font-family: inherit;
+            font-size: 19px;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            color: white;
+            text-align: left;
+        }
+        .btn-level small {
+            display: block;
+            font-size: 12px;
+            font-weight: normal;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+        .btn-level:active { transform: translateY(5px); }
+        .btn-mudah  { background: #2ecc71; box-shadow: 0 5px 0 #1ea359; }
+        .btn-mudah:active  { box-shadow: none; }
+        .btn-sedang { background: #f39c12; box-shadow: 0 5px 0 #c57d0e; }
+        .btn-sedang:active { box-shadow: none; }
+        .btn-sulit  { background: #e74c3c; box-shadow: 0 5px 0 #b73d30; }
+        .btn-sulit:active  { box-shadow: none; }
+        .btn-santai { background: #3498db; box-shadow: 0 5px 0 #2471a3; }
+        .btn-santai:active { box-shadow: none; }
+        .btn-soal10 { background: #e67e22; box-shadow: 0 5px 0 #c0611a; }
+        .btn-soal10:active { box-shadow: none; }
+
+        .btn-selesai {
+            display: none;
+            width: 100%;
+            padding: 12px;
+            font-family: inherit;
+            font-size: 17px;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            background: #95a5a6;
+            color: white;
+            box-shadow: 0 4px 0 #7f8c8d;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            margin-top: 10px;
+        }
+        .btn-selesai:active { transform: translateY(4px); box-shadow: none; }
+        #screen-game.mode-santai .btn-selesai { display: block; }
+
+        /* ── Score bar ── */
+        #score-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 500px;
+            margin: 0 auto 10px auto;
+            font-size: 15px;
+            color: #666;
+            font-weight: bold;
+            padding: 0 4px;
+        }
+        #score-display { color: var(--accent); font-size: 18px; }
+
+        .game-instruction { font-size: 14px; color: #999; margin: 0 0 16px 0; }
+
+        /* ── Uang: koin & uang kertas (ilustrasi bergaya, bukan tiruan uang asli) ── */
+        .money-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin: 6px 0 24px 0;
+            min-height: 90px;
+        }
+        .money-coin, .money-note {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+        }
+        .money-coin {
+            width: 82px;
+            height: 82px;
+            border-radius: 50%;
+            border: 4px dashed rgba(0,0,0,0.18);
+            color: #4a3b0a;
+        }
+        .money-note {
+            width: 128px;
+            height: 66px;
+            border-radius: 8px;
+            border: 2px solid rgba(255,255,255,0.55);
+            color: white;
+            position: relative;
+        }
+        .money-note::after {
+            content: '';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.6);
+        }
+        .coin-100  { background: #dfe6e9; }
+        .coin-200  { background: #f0e6d2; }
+        .coin-500  { background: #fdcb6e; }
+        .coin-1000 { background: #dfe6e9; border-color: #f9ca24; }
+        .note-1000  { background: #00b894; }
+        .note-2000  { background: #7f8c8d; }
+        .note-5000  { background: #a0522d; }
+        .note-10000 { background: #6c5ce7; }
+
+        /* ── Pilihan jawaban ── */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 10px;
+        }
+        .btn-option {
+            background-color: #ffd166;
+            color: #333;
+            font-size: 20px;
+            height: 66px;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            box-shadow: 0 5px 0 #d4a942;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-option:active:not(:disabled) { transform: translateY(5px); box-shadow: none; }
+        .btn-option.correct { background: #2ecc71; color: white; box-shadow: 0 5px 0 #1ea359; }
+        .btn-option.wrong   { background: #e74c3c; color: white; box-shadow: 0 5px 0 #b73d30; }
+        .btn-option:disabled { cursor: default; }
+
+        /* ── Result screen ── */
+        .result-score { font-size: 64px; font-weight: bold; color: var(--accent); line-height: 1; margin-bottom: 4px; }
+        .result-label { font-size: 13px; color: #aaa; margin-bottom: 6px; }
+        .result-summary { font-size: 17px; color: #555; margin-bottom: 18px; }
+        .review-list { text-align: left; margin-bottom: 20px; }
+        .review-item {
+            padding: 9px 12px;
+            font-size: 14px;
+            border-bottom: 1px solid #eee;
+            border-left: 5px solid #ccc;
+            margin-bottom: 4px;
+            border-radius: 0 8px 8px 0;
+        }
+        .review-item.ok    { border-left-color: #27ae60; }
+        .review-item.retry { border-left-color: #f39c12; background: #fefbf0; }
+        .btn-again {
+            width: 100%;
+            padding: 15px;
+            font-family: inherit;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 5px 0 var(--accent-shadow);
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-again:active { transform: translateY(5px); box-shadow: none; }
+    </style>
+</head>
+<body data-theme="math">
+<div id="topbar"></div>
+<script src="../../../assets/shared.js"></script>
+<script>
+    initTopBar({ title: 'Uang', backHref: '../', homeHref: '../../../', audio: true });
+</script>
+
+<!-- ════════ Screen: Mode ════════ -->
+<div id="screen-mode" class="screen active">
+    <div class="box">
+        <p class="box-title">Pilih mode:</p>
+        <button class="btn-level btn-santai" onclick="selectMode('santai')">
+            🌤️ Santai
+            <small>Latihan bebas, selesai kapan saja</small>
+        </button>
+        <button class="btn-level btn-soal10" onclick="selectMode('soal10')">
+            🎯 10 Soal
+            <small>Tepat 10 soal lalu lihat hasilnya</small>
+        </button>
+    </div>
+</div>
+
+<!-- ════════ Screen: Level ════════ -->
+<div id="screen-level" class="screen">
+    <div class="box">
+        <button class="btn-action btn-secondary btn-wizard-back" onclick="showScreen('screen-mode')">⬅ Ganti Mode</button>
+        <p class="box-title">Pilih level:</p>
+        <button class="btn-level btn-mudah" onclick="selectLevel('mudah')">
+            😊 Mudah
+            <small>Kenali 1 uang</small>
+        </button>
+        <button class="btn-level btn-sedang" onclick="selectLevel('sedang')">
+            🤔 Sedang
+            <small>Hitung total 2 uang</small>
+        </button>
+        <button class="btn-level btn-sulit" onclick="selectLevel('sulit')">
+            😤 Sulit
+            <small>Hitung total 3 uang</small>
+        </button>
+    </div>
+</div>
+
+<!-- ════════ Screen: Game ════════ -->
+<div id="screen-game" class="screen">
+    <div id="score-bar">
+        <span id="q-progress">Soal 1</span>
+        <span>Skor: <span id="score-display">0</span></span>
+    </div>
+    <div class="box">
+        <button class="btn-action btn-secondary btn-wizard-back" onclick="showScreen('screen-level')">⬅ Ganti Level</button>
+        <p class="game-instruction" id="game-instruction">Berapa nilai uang ini?</p>
+        <div class="money-row" id="money-row"></div>
+        <div class="feedback" id="feedback"></div>
+        <div class="options-grid" id="options-grid"></div>
+        <button class="btn-selesai" onclick="finishGame()">⏹ Selesai &amp; Lihat Hasil</button>
+    </div>
+</div>
+
+<!-- ════════ Screen: Result ════════ -->
+<div id="screen-result" class="screen">
+    <div class="box">
+        <p class="box-title">🎉 Hasil</p>
+        <div class="result-score" id="final-score">0</div>
+        <p class="result-label">poin</p>
+        <p class="result-summary" id="result-summary"></p>
+        <div class="review-list" id="review-list"></div>
+        <button class="btn-again" onclick="showScreen('screen-mode')">🔄 Main Lagi</button>
+    </div>
+</div>
+
+<script>
+// ── Data uang ────────────────────────────────────────────────────────────────
+// Ilustrasi bergaya (bentuk + warna), bukan tiruan uang asli — aman dari sisi hak cipta.
+const MONEY = [
+    { type: 'coin', value: 100 },
+    { type: 'coin', value: 200 },
+    { type: 'coin', value: 500 },
+    { type: 'coin', value: 1000 },
+    { type: 'note', value: 1000 },
+    { type: 'note', value: 2000 },
+    { type: 'note', value: 5000 },
+    { type: 'note', value: 10000 },
+];
+const WRONG_OFFSETS = [-2000, -1000, -500, -200, -100, 100, 200, 500, 1000, 2000];
+
+function formatRupiah(n) {
+    return 'Rp' + n.toLocaleString('id-ID');
+}
+function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function pickMoney() {
+    return MONEY[randInt(0, MONEY.length - 1)];
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentLevel = '';
+let gameMode = '';   // 'santai' | 'soal10'
+let score = 0;
+let questionNum = 0;
+let currentQ = {};   // { items, total, mistakes, solved }
+let gameHistory = [];
+let isChecking = false;
+
+// ── Screens ───────────────────────────────────────────────────────────────────
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+}
+
+// ── Game flow ─────────────────────────────────────────────────────────────────
+function selectMode(mode) {
+    gameMode = mode;
+    showScreen('screen-level');
+}
+
+function selectLevel(lvl) {
+    currentLevel = lvl;
+    score = 0;
+    questionNum = 0;
+    gameHistory = [];
+    const gameScreen = document.getElementById('screen-game');
+    gameScreen.classList.toggle('mode-santai', gameMode === 'santai');
+    showScreen('screen-game');
+    generateQuestion();
+}
+
+function generateQuestion() {
+    if (gameMode === 'soal10' && questionNum >= 10) { finishGame(); return; }
+    questionNum++;
+    isChecking = false;
+
+    const count = currentLevel === 'mudah' ? 1 : (currentLevel === 'sedang' ? 2 : 3);
+    const items = [];
+    for (let i = 0; i < count; i++) items.push(pickMoney());
+    const total = items.reduce((sum, item) => sum + item.value, 0);
+
+    currentQ = { items, total, mistakes: 0, solved: false };
+
+    document.getElementById('game-instruction').textContent =
+        count === 1 ? 'Berapa nilai uang ini?' : 'Berapa total uang ini?';
+
+    updateScoreBar();
+    renderMoneyRow(items);
+    renderChoices(total);
+    clearFeedback();
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderMoneyRow(items) {
+    const row = document.getElementById('money-row');
+    row.innerHTML = items.map(item =>
+        item.type === 'coin'
+            ? `<div class="money-coin coin-${item.value}">${formatRupiah(item.value)}</div>`
+            : `<div class="money-note note-${item.value}">${formatRupiah(item.value)}</div>`
+    ).join('');
+}
+
+function renderChoices(correct) {
+    const choices = [correct];
+    while (choices.length < 4) {
+        const offset = WRONG_OFFSETS[randInt(0, WRONG_OFFSETS.length - 1)];
+        const val = correct + offset;
+        if (val > 0 && !choices.includes(val)) choices.push(val);
+    }
+    choices.sort(() => Math.random() - 0.5);
+
+    const grid = document.getElementById('options-grid');
+    grid.innerHTML = choices.map((val, i) =>
+        `<button class="btn-option" id="opt${i}" onclick="checkAnswer(${val}, this)">${formatRupiah(val)}</button>`
+    ).join('');
+}
+
+// ── Check answer ──────────────────────────────────────────────────────────────
+function checkAnswer(val, btnEl) {
+    if (isChecking) return;
+    isChecking = true;
+
+    if (val === currentQ.total) {
+        currentQ.solved = true;
+        btnEl.classList.add('correct');
+        score += 10;
+        playSfx('correct');
+        confetti({ particleCount: 60, spread: 60, origin: { y: 0.7 } });
+        updateScoreBar();
+        gameHistory.push({ ...currentQ });
+        setTimeout(generateQuestion, 1200);
+    } else {
+        currentQ.mistakes++;
+        btnEl.classList.add('wrong');
+        score = Math.max(0, score - 5);
+        playSfx('wrong');
+        updateScoreBar();
+        setTimeout(() => {
+            document.querySelectorAll('.btn-option').forEach(b => b.classList.remove('wrong'));
+            isChecking = false;
+        }, 900);
+    }
+}
+
+// ── Feedback & score bar ──────────────────────────────────────────────────────
+function clearFeedback() {
+    const el = document.getElementById('feedback');
+    el.textContent = '';
+    el.className = 'feedback';
+}
+function updateScoreBar() {
+    const progress = gameMode === 'soal10' ? `Soal ${questionNum}/10` : `Soal ${questionNum}`;
+    document.getElementById('q-progress').textContent = progress;
+    document.getElementById('score-display').textContent = score;
+}
+
+// ── Result ────────────────────────────────────────────────────────────────────
+function finishGame() {
+    document.getElementById('final-score').textContent = score;
+    const perfect = gameHistory.filter(h => h.mistakes === 0).length;
+    const withRetry = gameHistory.filter(h => h.mistakes > 0).length;
+    document.getElementById('result-summary').textContent =
+        `✅ ${perfect} sempurna   ⚠️ ${withRetry} setelah dicoba`;
+
+    const list = document.getElementById('review-list');
+    list.innerHTML = '';
+    gameHistory.forEach((h, i) => {
+        const item = document.createElement('div');
+        const isPerfect = h.mistakes === 0;
+        item.className = 'review-item ' + (isPerfect ? 'ok' : 'retry');
+        item.innerHTML =
+            `<b>${i + 1}.</b> ${isPerfect ? '✅' : '⚠️'} <b>${formatRupiah(h.total)}</b>` +
+            (h.mistakes > 0
+                ? ` <span style="color:#e67e22;font-size:12px">(salah ${h.mistakes}×)</span>`
+                : '');
+        list.appendChild(item);
+    });
+
+    showScreen('screen-result');
+}
+</script>
+</body>
+</html>
