@@ -63,15 +63,15 @@
 
     <script>
         const words = [
-            { word: 'father',      emoji: '👨', img: 'https://img.icons8.com/color/96/father.png' },
-            { word: 'mother',      emoji: '👩', img: 'https://img.icons8.com/color/96/mother.png' },
-            { word: 'brother',     emoji: '👦', img: 'https://img.icons8.com/color/96/brother.png' },
-            { word: 'sister',      emoji: '👧', img: 'https://img.icons8.com/color/96/sister.png' },
-            { word: 'grandfather', emoji: '👴', img: 'https://img.icons8.com/color/96/grandfather.png' },
-            { word: 'grandmother', emoji: '👵', img: 'https://img.icons8.com/color/96/grandmother.png' },
-            { word: 'baby',        emoji: '👶', img: 'https://img.icons8.com/color/96/baby.png' },
-            { word: 'son',         emoji: '👦', img: 'https://img.icons8.com/color/96/boy.png' },
-            { word: 'daughter',    emoji: '👧', img: 'https://img.icons8.com/color/96/girl.png' },
+            { word: 'father',      meaning: 'ayah',              emoji: '👨', img: 'https://img.icons8.com/color/96/father.png' },
+            { word: 'mother',      meaning: 'ibu',               emoji: '👩', img: 'https://img.icons8.com/color/96/mother.png' },
+            { word: 'brother',     meaning: 'saudara laki-laki', emoji: '👦', img: 'https://img.icons8.com/color/96/brother.png' },
+            { word: 'sister',      meaning: 'saudara perempuan', emoji: '👧', img: 'https://img.icons8.com/color/96/sister.png' },
+            { word: 'grandfather', meaning: 'kakek',             emoji: '👴', img: 'https://img.icons8.com/color/96/grandfather.png' },
+            { word: 'grandmother', meaning: 'nenek',             emoji: '👵', img: 'https://img.icons8.com/color/96/grandmother.png' },
+            { word: 'baby',        meaning: 'bayi',              emoji: '👶', img: 'https://img.icons8.com/color/96/baby.png' },
+            { word: 'son',         meaning: 'anak laki-laki',    emoji: '👦', img: 'https://img.icons8.com/color/96/boy.png' },
+            { word: 'daughter',    meaning: 'anak perempuan',    emoji: '👧', img: 'https://img.icons8.com/color/96/girl.png' },
         ];
 
         const PER_PAGE = 6;
@@ -87,6 +87,7 @@
                     <img src="${item.img}" alt="${item.word}"
                          onerror="this.outerHTML='<span style=\\'font-size:52px;display:block;text-align:center;margin:0 auto 8px\\'>${item.emoji}</span>'">
                     <p>${item.word.charAt(0).toUpperCase() + item.word.slice(1)}</p>
+                    <small>${item.meaning}</small>
                 </div>
             `).join('');
 

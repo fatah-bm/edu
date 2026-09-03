@@ -92,19 +92,19 @@
 
     <script>
         const items = [
-            { singular: 'onion',      plural: 'onions',       base: 'onion',     ending: 's',   emoji: '🧅', img: 'https://img.icons8.com/color/96/onion.png' },
-            { singular: 'strawberry', plural: 'strawberries', base: 'strawberr', ending: 'ies', emoji: '🍓', img: 'https://img.icons8.com/color/96/strawberry.png' },
-            { singular: 'tomato',     plural: 'tomatoes',     base: 'tomato',    ending: 'es',  emoji: '🍅', img: 'https://img.icons8.com/color/96/tomato.png' },
-            { singular: 'carrot',     plural: 'carrots',      base: 'carrot',    ending: 's',   emoji: '🥕', img: 'https://img.icons8.com/color/96/carrot.png' },
-            { singular: 'cabbage',    plural: 'cabbages',     base: 'cabbage',   ending: 's',   emoji: '🥬', img: 'https://img.icons8.com/color/96/cabbage.png' },
-            { singular: 'broccoli',   plural: 'broccolis',    base: 'broccoli',  ending: 's',   emoji: '🥦', img: 'https://img.icons8.com/color/96/broccoli.png' },
-            { singular: 'donut',      plural: 'donuts',       base: 'donut',     ending: 's',   emoji: '🍩', img: 'https://img.icons8.com/color/96/donut.png' },
-            { singular: 'leaf',       plural: 'leaves',       base: 'lea',       ending: 'ves', emoji: '🍃', img: 'https://img.icons8.com/color/96/leaf.png' },
-            { singular: 'knife',      plural: 'knives',       base: 'kni',       ending: 'ves', emoji: '🔪', img: 'https://img.icons8.com/color/96/knife.png' },
-            { singular: 'book',       plural: 'books',        base: 'book',      ending: 's',   emoji: '📖', img: 'https://img.icons8.com/color/96/book.png' },
-            { singular: 'pen',        plural: 'pens',         base: 'pen',       ending: 's',   emoji: '🖊️', img: 'https://img.icons8.com/color/96/pen.png' },
-            { singular: 'pencil',     plural: 'pencils',      base: 'pencil',    ending: 's',   emoji: '✏️', img: 'https://img.icons8.com/color/96/pencil.png' },
-            { singular: 'toy',        plural: 'toys',         base: 'toy',       ending: 's',   emoji: '🧸', img: 'https://img.icons8.com/color/96/toy.png' },
+            { singular: 'onion',      plural: 'onions',       base: 'onion',     ending: 's',   emoji: '🧅', img: 'https://img.icons8.com/color/96/onion.png',      meaning: 'bawang',  meaningPlural: 'bawang-bawang' },
+            { singular: 'strawberry', plural: 'strawberries', base: 'strawberr', ending: 'ies', emoji: '🍓', img: 'https://img.icons8.com/color/96/strawberry.png', meaning: 'stroberi', meaningPlural: 'stroberi-stroberi' },
+            { singular: 'tomato',     plural: 'tomatoes',     base: 'tomato',    ending: 'es',  emoji: '🍅', img: 'https://img.icons8.com/color/96/tomato.png',     meaning: 'tomat',   meaningPlural: 'tomat-tomat' },
+            { singular: 'carrot',     plural: 'carrots',      base: 'carrot',    ending: 's',   emoji: '🥕', img: 'https://img.icons8.com/color/96/carrot.png',     meaning: 'wortel',  meaningPlural: 'wortel-wortel' },
+            { singular: 'cabbage',    plural: 'cabbages',     base: 'cabbage',   ending: 's',   emoji: '🥬', img: 'https://img.icons8.com/color/96/cabbage.png',    meaning: 'kubis',   meaningPlural: 'kubis-kubis' },
+            { singular: 'broccoli',   plural: 'broccolis',    base: 'broccoli',  ending: 's',   emoji: '🥦', img: 'https://img.icons8.com/color/96/broccoli.png',   meaning: 'brokoli', meaningPlural: 'brokoli-brokoli' },
+            { singular: 'donut',      plural: 'donuts',       base: 'donut',     ending: 's',   emoji: '🍩', img: 'https://img.icons8.com/color/96/donut.png',      meaning: 'donat',   meaningPlural: 'donat-donat' },
+            { singular: 'leaf',       plural: 'leaves',       base: 'lea',       ending: 'ves', emoji: '🍃', img: 'https://img.icons8.com/color/96/leaf.png',       meaning: 'daun',    meaningPlural: 'daun-daun' },
+            { singular: 'knife',      plural: 'knives',       base: 'kni',       ending: 'ves', emoji: '🔪', img: 'https://img.icons8.com/color/96/knife.png',      meaning: 'pisau',   meaningPlural: 'pisau-pisau' },
+            { singular: 'book',       plural: 'books',        base: 'book',      ending: 's',   emoji: '📖', img: 'https://img.icons8.com/color/96/book.png',       meaning: 'buku',    meaningPlural: 'buku-buku' },
+            { singular: 'pen',        plural: 'pens',         base: 'pen',       ending: 's',   emoji: '🖊️', img: 'https://img.icons8.com/color/96/pen.png',        meaning: 'pena',    meaningPlural: 'pena-pena' },
+            { singular: 'pencil',     plural: 'pencils',      base: 'pencil',    ending: 's',   emoji: '✏️', img: 'https://img.icons8.com/color/96/pencil.png',     meaning: 'pensil',  meaningPlural: 'pensil-pensil' },
+            { singular: 'toy',        plural: 'toys',         base: 'toy',       ending: 's',   emoji: '🧸', img: 'https://img.icons8.com/color/96/toy.png',        meaning: 'mainan',  meaningPlural: 'mainan-mainan' },
         ];
 
         const PER_PAGE = 3;
@@ -126,6 +126,7 @@
                     <div class="card card--leaf singular" data-word="${item.singular}">
                         ${imgTag(item.img, item.emoji, 'single-img')}
                         <p>${item.singular}</p>
+                        <small>${item.meaning}</small>
                     </div>
                     <div class="card card--leaf plural" data-word="${item.plural}" data-singular="${item.singular}">
                         <div class="multi-imgs">
@@ -133,6 +134,7 @@
                             ${imgTag(item.img, item.emoji, 'multi-img')}
                         </div>
                         <p>${item.base}<span class="ending">${item.ending}</span></p>
+                        <small>${item.meaningPlural}</small>
                     </div>
                 </div>
             `).join('');

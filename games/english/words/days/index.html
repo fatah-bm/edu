@@ -43,13 +43,13 @@
 
     <script>
         const days = [
-            { word: 'Sunday',    abbr: 'SUN', color: '#ff6b6b', shadow: '#cc4444' },
-            { word: 'Monday',    abbr: 'MON', color: '#ffa552', shadow: '#cc7a30' },
-            { word: 'Tuesday',   abbr: 'TUE', color: '#ffd166', shadow: '#ccaa33' },
-            { word: 'Wednesday', abbr: 'WED', color: '#2ecc71', shadow: '#27ae60' },
-            { word: 'Thursday',  abbr: 'THU', color: '#4ecdc4', shadow: '#36b2aa' },
-            { word: 'Friday',    abbr: 'FRI', color: '#3498db', shadow: '#2176ae' },
-            { word: 'Saturday',  abbr: 'SAT', color: '#9b59b6', shadow: '#7d3c98' },
+            { word: 'Sunday',    abbr: 'SUN', color: '#ff6b6b', shadow: '#cc4444', meaning: 'Minggu' },
+            { word: 'Monday',    abbr: 'MON', color: '#ffa552', shadow: '#cc7a30', meaning: 'Senin' },
+            { word: 'Tuesday',   abbr: 'TUE', color: '#ffd166', shadow: '#ccaa33', meaning: 'Selasa' },
+            { word: 'Wednesday', abbr: 'WED', color: '#2ecc71', shadow: '#27ae60', meaning: 'Rabu' },
+            { word: 'Thursday',  abbr: 'THU', color: '#4ecdc4', shadow: '#36b2aa', meaning: 'Kamis' },
+            { word: 'Friday',    abbr: 'FRI', color: '#3498db', shadow: '#2176ae', meaning: 'Jumat' },
+            { word: 'Saturday',  abbr: 'SAT', color: '#9b59b6', shadow: '#7d3c98', meaning: 'Sabtu' },
         ];
 
         const grid = document.getElementById('grid');
@@ -58,6 +58,7 @@
                  style="border: 3px solid ${d.color}; box-shadow: 0 5px 0 ${d.shadow};">
                 <span class="badge" style="background-color: ${d.color};">${d.abbr}</span>
                 <p>${d.word}</p>
+                <small>${d.meaning}</small>
             </div>
         `).join('');
 

@@ -49,18 +49,18 @@
 
     <script>
         const months = [
-            { word: 'January',   abbr: 'JAN', color: '#74b9ff', shadow: '#4a90d9' },
-            { word: 'February',  abbr: 'FEB', color: '#a29bfe', shadow: '#7c6fd4' },
-            { word: 'March',     abbr: 'MAR', color: '#55efc4', shadow: '#38c9a0' },
-            { word: 'April',     abbr: 'APR', color: '#81ecec', shadow: '#55c9c9' },
-            { word: 'May',       abbr: 'MAY', color: '#2ecc71', shadow: '#27ae60' },
-            { word: 'June',      abbr: 'JUN', color: '#ffd166', shadow: '#ccaa33' },
-            { word: 'July',      abbr: 'JUL', color: '#ff9f43', shadow: '#cc7a1f' },
-            { word: 'August',    abbr: 'AUG', color: '#ff6b6b', shadow: '#cc4444' },
-            { word: 'September', abbr: 'SEP', color: '#e17055', shadow: '#b54e37' },
-            { word: 'October',   abbr: 'OCT', color: '#d35400', shadow: '#a84300' },
-            { word: 'November',  abbr: 'NOV', color: '#636e72', shadow: '#4a5254' },
-            { word: 'December',  abbr: 'DEC', color: '#74b9ff', shadow: '#4a90d9' },
+            { word: 'January',   abbr: 'JAN', color: '#74b9ff', shadow: '#4a90d9', meaning: 'Januari' },
+            { word: 'February',  abbr: 'FEB', color: '#a29bfe', shadow: '#7c6fd4', meaning: 'Februari' },
+            { word: 'March',     abbr: 'MAR', color: '#55efc4', shadow: '#38c9a0', meaning: 'Maret' },
+            { word: 'April',     abbr: 'APR', color: '#81ecec', shadow: '#55c9c9', meaning: 'April' },
+            { word: 'May',       abbr: 'MAY', color: '#2ecc71', shadow: '#27ae60', meaning: 'Mei' },
+            { word: 'June',      abbr: 'JUN', color: '#ffd166', shadow: '#ccaa33', meaning: 'Juni' },
+            { word: 'July',      abbr: 'JUL', color: '#ff9f43', shadow: '#cc7a1f', meaning: 'Juli' },
+            { word: 'August',    abbr: 'AUG', color: '#ff6b6b', shadow: '#cc4444', meaning: 'Agustus' },
+            { word: 'September', abbr: 'SEP', color: '#e17055', shadow: '#b54e37', meaning: 'September' },
+            { word: 'October',   abbr: 'OCT', color: '#d35400', shadow: '#a84300', meaning: 'Oktober' },
+            { word: 'November',  abbr: 'NOV', color: '#636e72', shadow: '#4a5254', meaning: 'November' },
+            { word: 'December',  abbr: 'DEC', color: '#74b9ff', shadow: '#4a90d9', meaning: 'Desember' },
         ];
 
         const PER_PAGE = 6;
@@ -76,6 +76,7 @@
                      style="border: 3px solid ${m.color}; box-shadow: 0 5px 0 ${m.shadow};">
                     <span class="badge" style="background-color: ${m.color};">${m.abbr}</span>
                     <p>${m.word}</p>
+                    <small>${m.meaning}</small>
                 </div>
             `).join('');
 

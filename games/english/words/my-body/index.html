@@ -52,10 +52,25 @@
 
     <script>
         const words = [
-            'head', 'hair', 'eyes', 'ears', 'nose',
-            'mouth', 'cheek', 'chin', 'neck', 'shoulders',
-            'elbow', 'fingers', 'hands', 'stomach', 'knees',
-            'legs', 'toes', 'feet', 'foot',
+            { word: 'head',      meaning: 'kepala' },
+            { word: 'hair',      meaning: 'rambut' },
+            { word: 'eyes',      meaning: 'mata' },
+            { word: 'ears',      meaning: 'telinga' },
+            { word: 'nose',      meaning: 'hidung' },
+            { word: 'mouth',     meaning: 'mulut' },
+            { word: 'cheek',     meaning: 'pipi' },
+            { word: 'chin',      meaning: 'dagu' },
+            { word: 'neck',      meaning: 'leher' },
+            { word: 'shoulders', meaning: 'bahu' },
+            { word: 'elbow',     meaning: 'siku' },
+            { word: 'fingers',   meaning: 'jari tangan' },
+            { word: 'hands',     meaning: 'tangan' },
+            { word: 'stomach',   meaning: 'perut' },
+            { word: 'knees',     meaning: 'lutut' },
+            { word: 'legs',      meaning: 'tungkai' },
+            { word: 'toes',      meaning: 'jari kaki' },
+            { word: 'feet',      meaning: 'kaki (jamak)' },
+            { word: 'foot',      meaning: 'kaki' },
         ];
 
         const PER_PAGE = 6;
@@ -68,14 +83,15 @@
             const start = currentPage * PER_PAGE;
             const pageWords = words.slice(start, start + PER_PAGE);
 
-            grid.innerHTML = pageWords.map((word, i) => {
+            grid.innerHTML = pageWords.map((item, i) => {
                 const idx = start + i;
                 const bx = (idx % COLS) * 64;
                 const by = Math.floor(idx / COLS) * 64;
                 return `
-                <div class="card card--leaf" data-word="${word}">
+                <div class="card card--leaf" data-word="${item.word}">
                     <div class="sprite" style="background-position: -${bx}px -${by}px;"></div>
-                    <p>${word.charAt(0).toUpperCase() + word.slice(1)}</p>
+                    <p>${item.word.charAt(0).toUpperCase() + item.word.slice(1)}</p>
+                    <small>${item.meaning}</small>
                 </div>`;
             }).join('');
 

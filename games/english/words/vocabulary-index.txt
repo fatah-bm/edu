@@ -37,7 +37,7 @@ Adjective           | ruler          | ⚠️
 Color               | paint-palette  | ⚠️
 Animal              | lion           | ⚠️
 Public Facilities   | city-buildings | ⚠️
-My House            | house          | ⚠️
+My House            | home           | ✅
 
 --- games/english/conversation/index.html ---
 (menggunakan emoji langsung, bukan Icons8)
