@@ -172,22 +172,25 @@ Jumlah kotak ditentukan otomatis oleh jumlah digit angka (`getPositions()` baca 
 
 ## Game: `games/math/tambahkali`
 
-Game pilihan ganda matematika (penjumlahan, pengurangan, perkalian, pembagian) untuk anak SD. Hub `games/math/index.html` menyebutnya "Tambah, Kurang, Kali & Bagi" meski folder tetap `tambahkali/` (nama folder historis, tidak di-rename supaya link lama tidak putus).
+Game pilihan ganda matematika (penjumlahan, pengurangan, perkalian, pembagian) untuk anak SD, mengikuti pemisahan Kelas 1/Kelas 2 di `kurikulum.md` bab 2 ("Matematika"). Hub `games/math/index.html` menyebutnya "Tambah, Kurang, Kali & Bagi" meski folder tetap `tambahkali/` (nama folder historis, tidak di-rename supaya link lama tidak putus).
 
-**Flow layar:** `screen-type` → `screen-operation` → `screen-level` → `screen-game` → `screen-result`
+**Flow layar:** `screen-type` → `screen-operation` → `screen-grade` (dilewati kalau cuma 1 kelas valid) → `screen-level` → `screen-game` → `screen-result`
 
 **State game** dikelola via variabel global di `<script>` halaman (sudah inline, mengikuti konvensi game lain — dulu sempat pakai `style.css`/`script.js` eksternal, sudah dimigrasikan):
 - `gameType`: `'practice'` | `'challenge'` — practice tanpa timer, challenge 120 detik
-- `currentOperation`: `'add'` | `'sub'` | `'mul'` | `'div'` | `'mix'` | `'find'` — judul & emoji tiap operasi dipusatkan di `OP_TITLES`/`OP_EMOJIS` (bukan ternary bercabang, supaya DRY saat menambah operasi baru). `mix` (Campuran) dan `find` (Cari Yang Hilang) mengacak salah satu dari 4 operasi dasar lewat `pickRandomBaseOp()` — bukan operasi tersendiri.
-- `currentLevel`: `'easy'` | `'medium'` | `'hard'`
+- `currentOperation`: `'add'` | `'sub'` | `'mul'` | `'div'` | `'mixTK'` | `'mixKB'` | `'findTK'` | `'findKB'` — judul & emoji tiap operasi dipusatkan di `OP_TITLES`/`OP_EMOJIS` (bukan ternary bercabang, supaya DRY saat menambah operasi baru). `mixTK`/`findTK` mengacak antara `add`/`mul`, `mixKB`/`findKB` mengacak antara `sub`/`div` — dipetakan lewat `OP_POOLS` (sengaja dipecah per-pasangan, bukan mengacak dari 4 operasi sekaligus, biar latihan tetap fokus).
+- `currentGrade`: `'grade1'` | `'grade2'` — kelas mana yang dipakai untuk generate rentang angka. `OP_GRADES` memetakan operasi mana yang valid di kelas mana: `add`/`sub` bisa Kelas 1 atau 2, sedangkan `mul`/`div` dan ke-4 varian campuran/cari-yang-hilang **cuma Kelas 2** (perkalian & pembagian baru diajarkan mulai Kelas 2 — lihat `kurikulum.md`). Kalau `OP_GRADES[op].length === 1`, `selectOperation()` melewati `screen-grade` dan langsung set `currentGrade` itu.
+- `currentLevel`: `'easy'` | `'medium'` | `'hard'` | `'expert'` (label tampilan: Mudah/Sedang/Sulit/Mahir). Tombol Mahir (`#btn-lvl-expert`) cuma dimunculkan kalau `currentGrade === 'grade2'` (di-toggle oleh `prepareLevelScreen()`) — Kelas 1 cuma 3 level, karena kurikulumnya berhenti di angka hingga 20.
+- `levelBackScreen`: `'screen-grade'` | `'screen-operation'` — tombol Kembali di `screen-level` butuh tahu harus balik ke mana (`goBackFromLevel()`), karena kadang `screen-grade` dilewati.
 - `currentQuestionData`: object state soal aktif (`qText`, `trueAns`, `mistakes`, `solved`)
 - `gameHistory`: array soal yang sudah selesai, dipakai untuk layar review
 
-**Generator soal per operasi** (`generateQuestion()`), semua dibuat agar kesulitannya sepadan dengan pasangan operasinya:
-- `add`: penjumlahan biasa, rentang angka naik per level (1-5 → 1-10 → 5-15).
-- `sub`: pakai rentang angka yang sama seperti `add`, lalu `num1 = max, num2 = min` — hasil **tidak pernah negatif** (penting untuk anak SD).
-- `mul`: rentang angka + pool pengali per level (easy pakai pool `[1,2,10]`).
-- `div`: dibalik dari `mul` — generate `quotient` & `divisor` dulu (rentang sama seperti pengali `mul`), lalu `num1 = quotient * divisor` supaya **hasil bagi selalu bilangan bulat**.
+**Generator soal per operasi** (`generateQuestion()`), rentang angka bergantung pada `currentGrade` + `currentLevel`:
+- `add`/`sub` Kelas 1: angka hingga 20 (rentang sama seperti sebelum ada kelas, `sub` selalu `num1=max, num2=min` biar **tidak pernah negatif**).
+- `add` Kelas 2: dua digit, easy dijamin **tanpa menyimpan** (satuan1+satuan2 ≤ 9), medium campuran alami, hard **dipaksa menyimpan** (satuan1+satuan2 ≥ 10), expert/Mahir sama seperti hard tapi salah satu bilangan dibuat jauh lebih besar (3 digit-an).
+- `sub` Kelas 2: dua digit, easy dijamin **tanpa meminjam** (satuan1 ≥ satuan2), medium campuran alami, hard **dipaksa meminjam** (satuan1 < satuan2, tapi puluhan1 > puluhan2 supaya `num1` tetap lebih besar), expert/Mahir sama seperti hard dengan `num1` dibuat jauh lebih besar.
+- `mul`: selalu Kelas 2, rentang angka + pool pengali naik per level (easy=tabel 1-5, hard=6-10, expert/Mahir=6-12 di kedua faktor).
+- `div`: dibalik dari `mul` — generate `quotient` & `divisor` dulu (rentang sama seperti `mul`), lalu `num1 = quotient * divisor` supaya **hasil bagi selalu bilangan bulat**.
 - Simbol tiap operasi: `+` `-` `x` `:` (bukan `×`/`÷` unicode, konsisten dengan gaya `x` yang sudah dipakai).
 
 **Scoring:** +10 jawaban benar, -5 jawaban salah (minimum 0). Soal tidak diganti saat salah — anak bisa mencoba lagi sampai benar.

@@ -61,7 +61,10 @@
         .btn-lvl-easy { background-color: #2ecc71; }
         .btn-lvl-med { background-color: #f39c12; }
         .btn-lvl-hard { background-color: #e74c3c; }
+        .btn-lvl-expert { background-color: #34495e; }
         .btn-find { background-color: #8e44ad; }
+        .btn-grade1 { background-color: #1abc9c; }
+        .btn-grade2 { background-color: #d35400; }
         /* In-wizard "go back a step" / "stop & see result" button — distinct from
            the top-bar's .btn-back (parent-folder nav), so it gets its own class. */
         .btn-wizard-back { background-color: #c7ceea; color: #333; font-size: 16px; margin-top: 15px; }
@@ -168,9 +171,18 @@
         <button class="btn btn-sub" onclick="selectOperation('sub')">➖ Pengurangan</button>
         <button class="btn btn-mul" onclick="selectOperation('mul')">✖️ Perkalian</button>
         <button class="btn btn-div" onclick="selectOperation('div')">➗ Pembagian</button>
-        <button class="btn btn-mix" onclick="selectOperation('mix')">🎲 Campuran</button>
-        <button class="btn btn-find" onclick="selectOperation('find')">🔍 Cari Yang Hilang</button>
+        <button class="btn btn-mix" onclick="selectOperation('mixTK')">🎲 Campuran (Tambah & Kali)</button>
+        <button class="btn btn-mix" onclick="selectOperation('mixKB')">🎲 Campuran (Kurang & Bagi)</button>
+        <button class="btn btn-find" onclick="selectOperation('findTK')">🔍 Cari Yang Hilang (Tambah & Kali)</button>
+        <button class="btn btn-find" onclick="selectOperation('findKB')">🔍 Cari Yang Hilang (Kurang & Bagi)</button>
         <button class="btn btn-wizard-back" onclick="showScreen('screen-type')">⬅️ Kembali</button>
+    </div>
+
+    <div id="screen-grade" class="box-container" style="display: none;">
+        <h2>Pilih Kelas:</h2>
+        <button class="btn btn-grade1" onclick="selectGrade('grade1')">1️⃣ Kelas 1</button>
+        <button class="btn btn-grade2" onclick="selectGrade('grade2')">2️⃣ Kelas 2</button>
+        <button class="btn btn-wizard-back" onclick="showScreen('screen-operation')">⬅️ Kembali</button>
     </div>
 
     <div id="screen-countdown" class="box-container" style="display: none;">
@@ -184,7 +196,8 @@
         <button class="btn btn-lvl-easy" onclick="selectLevel('easy')">🌟 Mudah</button>
         <button class="btn btn-lvl-med" onclick="selectLevel('medium')">⭐⭐ Sedang</button>
         <button class="btn btn-lvl-hard" onclick="selectLevel('hard')">🔥 Sulit</button>
-        <button class="btn btn-wizard-back" onclick="showScreen('screen-operation')">⬅️ Kembali</button>
+        <button class="btn btn-lvl-expert" id="btn-lvl-expert" onclick="selectLevel('expert')" style="display:none;">🏆 Mahir</button>
+        <button class="btn btn-wizard-back" onclick="goBackFromLevel()">⬅️ Kembali</button>
     </div>
 
     <div id="screen-game" class="box-container" style="display: none;">
@@ -220,7 +233,9 @@
         // Variabel Game
         let gameType = '';
         let currentOperation = '';
+        let currentGrade = '';
         let currentLevel = '';
+        let levelBackScreen = 'screen-grade'; // layar tujuan tombol Kembali di screen-level
         let score = 0;
         let isProcessing = false;
 
@@ -254,7 +269,7 @@
 
         // Navigasi UI
         function showScreen(screenId) {
-            const screens = ['screen-type', 'screen-operation', 'screen-level', 'screen-countdown', 'screen-game', 'screen-result'];
+            const screens = ['screen-type', 'screen-operation', 'screen-grade', 'screen-level', 'screen-countdown', 'screen-game', 'screen-result'];
             screens.forEach(id => document.getElementById(id).style.display = 'none');
             document.getElementById(screenId).style.display = 'block';
         }
@@ -267,21 +282,56 @@
 
         const OP_TITLES = {
             add: 'Penjumlahan', sub: 'Pengurangan', mul: 'Perkalian', div: 'Pembagian',
-            mix: 'Campuran', find: 'Cari Yang Hilang'
+            mixTK: 'Campuran (Tambah & Kali)', mixKB: 'Campuran (Kurang & Bagi)',
+            findTK: 'Cari Yang Hilang (Tambah & Kali)', findKB: 'Cari Yang Hilang (Kurang & Bagi)'
         };
         const OP_EMOJIS = {
-            add: '➕', sub: '➖', mul: '✖️', div: '➗', mix: '🎲', find: '🔍'
+            add: '➕', sub: '➖', mul: '✖️', div: '➗',
+            mixTK: '🎲', mixKB: '🎲', findTK: '🔍', findKB: '🔍'
         };
-        // Operasi dasar yang dipakai untuk mengacak soal di mode Campuran & Cari Yang Hilang
-        const BASE_OPS = ['add', 'sub', 'mul', 'div'];
-        function pickRandomBaseOp() {
-            return BASE_OPS[Math.floor(Math.random() * BASE_OPS.length)];
-        }
+        // Kelas mana saja yang valid untuk tiap operasi — Perkalian & Pembagian (serta
+        // gabungannya) baru diajarkan mulai Kelas 2, jadi tidak punya opsi Kelas 1.
+        const OP_GRADES = {
+            add: ['grade1', 'grade2'], sub: ['grade1', 'grade2'],
+            mul: ['grade2'], div: ['grade2'],
+            mixTK: ['grade2'], mixKB: ['grade2'], findTK: ['grade2'], findKB: ['grade2']
+        };
+        // Operasi dasar yang diacak untuk mode Campuran/Cari Yang Hilang yang fokus per pasangan
+        const OP_POOLS = {
+            mixTK: ['add', 'mul'], mixKB: ['sub', 'div'],
+            findTK: ['add', 'mul'], findKB: ['sub', 'div']
+        };
 
         function selectOperation(op) {
             currentOperation = op;
-            document.getElementById('level-title').innerText = `Level ${OP_TITLES[op]}:`;
+            const grades = OP_GRADES[op];
+            if (grades.length === 1) {
+                // Cuma satu kelas yang valid (mis. Perkalian = Kelas 2 saja) — lewati layar pilih kelas
+                currentGrade = grades[0];
+                levelBackScreen = 'screen-operation';
+                prepareLevelScreen();
+                showScreen('screen-level');
+            } else {
+                levelBackScreen = 'screen-grade';
+                showScreen('screen-grade');
+            }
+        }
+
+        function selectGrade(grade) {
+            currentGrade = grade;
+            prepareLevelScreen();
             showScreen('screen-level');
+        }
+
+        function prepareLevelScreen() {
+            const gradeLabel = currentGrade === 'grade1' ? 'Kelas 1' : 'Kelas 2';
+            document.getElementById('level-title').innerText = `Level ${OP_TITLES[currentOperation]} (${gradeLabel}):`;
+            // "Mahir" cuma tersedia di Kelas 2 (angka lebih besar + menyimpan/meminjam)
+            document.getElementById('btn-lvl-expert').style.display = currentGrade === 'grade2' ? 'block' : 'none';
+        }
+
+        function goBackFromLevel() {
+            showScreen(levelBackScreen);
         }
 
         function selectLevel(lvl) {
@@ -290,8 +340,9 @@
             gameHistory = [];
             document.getElementById('score').innerText = score;
 
-            let lvlName = lvl === 'easy' ? 'Mudah' : (lvl === 'medium' ? 'Sedang' : 'Sulit');
-            document.getElementById('game-info').innerText = `${OP_EMOJIS[currentOperation]} | ${lvlName}`;
+            const gradeLabel = currentGrade === 'grade1' ? 'K1' : 'K2';
+            let lvlName = lvl === 'easy' ? 'Mudah' : (lvl === 'medium' ? 'Sedang' : (lvl === 'hard' ? 'Sulit' : 'Mahir'));
+            document.getElementById('game-info').innerText = `${OP_EMOJIS[currentOperation]} | ${gradeLabel} | ${lvlName}`;
 
             if (gameType === 'challenge') {
                 document.getElementById('timer-badge').style.display = 'inline-block';
@@ -353,57 +404,95 @@
 
             let num1, num2;
             let activeOp = currentOperation;
-            const isFindMode = activeOp === 'find';
-            if (activeOp === 'mix' || activeOp === 'find') {
-                activeOp = pickRandomBaseOp();
+            const isFindMode = currentOperation === 'findTK' || currentOperation === 'findKB';
+            const pool = OP_POOLS[currentOperation];
+            if (pool) {
+                activeOp = pool[Math.floor(Math.random() * pool.length)];
             }
 
             let symbol = { add: '+', sub: '-', mul: 'x', div: ':' }[activeOp];
             let result = 0;
+            const R = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
             if (activeOp === 'add') {
-                if (currentLevel === 'easy') {
-                    num1 = Math.floor(Math.random() * 5) + 1;
-                    num2 = Math.floor(Math.random() * 5) + 1;
-                } else if (currentLevel === 'medium') {
-                    num1 = Math.floor(Math.random() * 10) + 1;
-                    num2 = Math.floor(Math.random() * 10) + 1;
+                if (currentGrade === 'grade1') {
+                    // Kelas 1: menjumlah hingga 20 (kurikulum: benda konkret hingga 20)
+                    if (currentLevel === 'easy') { num1 = R(1, 5); num2 = R(1, 5); }
+                    else if (currentLevel === 'medium') { num1 = R(1, 10); num2 = R(1, 10); }
+                    else { num1 = R(5, 15); num2 = R(1, 5); }
                 } else {
-                    num1 = Math.floor(Math.random() * 11) + 5;
-                    num2 = Math.floor(Math.random() * 11) + 5;
+                    // Kelas 2: penjumlahan dua digit, dengan/tanpa menyimpan
+                    if (currentLevel === 'easy') {
+                        // Tanpa menyimpan dijamin: satuan1 + satuan2 <= 9
+                        const ones1 = R(0, 9);
+                        const ones2 = R(0, 9 - ones1);
+                        num1 = R(1, 4) * 10 + ones1;
+                        num2 = R(1, 4) * 10 + ones2;
+                    } else if (currentLevel === 'medium') {
+                        // Campuran alami, kadang menyimpan kadang tidak
+                        num1 = R(10, 69); num2 = R(10, 69);
+                    } else if (currentLevel === 'hard') {
+                        // Dipaksa menyimpan: satuan1 + satuan2 >= 10
+                        const ones1 = R(1, 9);
+                        const ones2 = R(Math.max(1, 10 - ones1), 9);
+                        num1 = R(1, 8) * 10 + ones1;
+                        num2 = R(1, 8) * 10 + ones2;
+                    } else {
+                        // Mahir: angka jauh lebih besar (3 digit + 2 digit), tetap dipaksa menyimpan
+                        const ones1 = R(1, 9);
+                        const ones2 = R(Math.max(1, 10 - ones1), 9);
+                        num1 = R(10, 89) * 10 + ones1;
+                        num2 = R(1, 8) * 10 + ones2;
+                    }
                 }
                 result = num1 + num2;
             }
             else if (activeOp === 'sub') {
-                // Pakai rentang angka yang sama seperti penjumlahan, lalu urutkan
-                // num1 >= num2 supaya hasilnya tidak pernah negatif untuk anak SD.
-                let a, b;
-                if (currentLevel === 'easy') {
-                    a = Math.floor(Math.random() * 5) + 1;
-                    b = Math.floor(Math.random() * 5) + 1;
-                } else if (currentLevel === 'medium') {
-                    a = Math.floor(Math.random() * 10) + 1;
-                    b = Math.floor(Math.random() * 10) + 1;
+                if (currentGrade === 'grade1') {
+                    // Kelas 1: rentang sama seperti penjumlahan, num1 >= num2 supaya tidak negatif
+                    let a, b;
+                    if (currentLevel === 'easy') { a = R(1, 5); b = R(1, 5); }
+                    else if (currentLevel === 'medium') { a = R(1, 10); b = R(1, 10); }
+                    else { a = R(5, 15); b = R(1, 5); }
+                    num1 = Math.max(a, b); num2 = Math.min(a, b);
                 } else {
-                    a = Math.floor(Math.random() * 11) + 5;
-                    b = Math.floor(Math.random() * 11) + 5;
+                    // Kelas 2: pengurangan dua digit, dengan/tanpa meminjam
+                    if (currentLevel === 'easy') {
+                        // Tanpa meminjam dijamin: satuan1 >= satuan2
+                        const ones2 = R(0, 9);
+                        const ones1 = R(ones2, 9);
+                        const tens2 = R(1, 4);
+                        const tens1 = R(tens2, 9);
+                        num1 = tens1 * 10 + ones1;
+                        num2 = tens2 * 10 + ones2;
+                    } else if (currentLevel === 'medium') {
+                        // Campuran alami
+                        const a = R(10, 69), b = R(10, 69);
+                        num1 = Math.max(a, b); num2 = Math.min(a, b);
+                    } else if (currentLevel === 'hard') {
+                        // Dipaksa meminjam: satuan1 < satuan2, tapi puluhan1 > puluhan2 (num1 tetap lebih besar)
+                        const ones2 = R(1, 9);
+                        const ones1 = R(0, ones2 - 1);
+                        const tens2 = R(1, 8);
+                        const tens1 = R(tens2 + 1, 9);
+                        num1 = tens1 * 10 + ones1;
+                        num2 = tens2 * 10 + ones2;
+                    } else {
+                        // Mahir: num1 jauh lebih besar (3 digit-ish), tetap dipaksa meminjam
+                        const ones2 = R(1, 9);
+                        const ones1 = R(0, ones2 - 1);
+                        num1 = R(10, 89) * 10 + ones1;
+                        num2 = R(1, 8) * 10 + ones2;
+                    }
                 }
-                num1 = Math.max(a, b);
-                num2 = Math.min(a, b);
                 result = num1 - num2;
             }
             else if (activeOp === 'mul') {
-                if (currentLevel === 'easy') {
-                    const easyPool = [1, 2, 10];
-                    num1 = Math.floor(Math.random() * 10) + 1;
-                    num2 = easyPool[Math.floor(Math.random() * easyPool.length)];
-                } else if (currentLevel === 'medium') {
-                    num1 = Math.floor(Math.random() * 10) + 1;
-                    num2 = Math.floor(Math.random() * 5) + 1;
-                } else {
-                    num1 = Math.floor(Math.random() * 10) + 1;
-                    num2 = Math.floor(Math.random() * 5) + 6;
-                }
+                // Selalu Kelas 2 (perkalian belum diajarkan di Kelas 1)
+                if (currentLevel === 'easy') { num2 = R(1, 5); num1 = R(1, 5); }
+                else if (currentLevel === 'medium') { num2 = R(1, 5); num1 = R(1, 10); }
+                else if (currentLevel === 'hard') { num2 = R(6, 10); num1 = R(1, 10); }
+                else { num2 = R(6, 12); num1 = R(6, 12); } // Mahir: kedua faktor besar
                 if (Math.random() > 0.5) { let temp = num1; num1 = num2; num2 = temp; }
                 result = num1 * num2;
             }
@@ -411,17 +500,10 @@
                 // Dibalik dari perkalian (dividen = hasil kali) supaya hasil bagi
                 // selalu bilangan bulat, dengan tingkat kesulitan mengikuti pola perkalian.
                 let quotient, divisor;
-                if (currentLevel === 'easy') {
-                    const easyPool = [1, 2, 10];
-                    quotient = Math.floor(Math.random() * 10) + 1;
-                    divisor = easyPool[Math.floor(Math.random() * easyPool.length)];
-                } else if (currentLevel === 'medium') {
-                    quotient = Math.floor(Math.random() * 10) + 1;
-                    divisor = Math.floor(Math.random() * 5) + 1;
-                } else {
-                    quotient = Math.floor(Math.random() * 10) + 1;
-                    divisor = Math.floor(Math.random() * 5) + 6;
-                }
+                if (currentLevel === 'easy') { divisor = R(1, 5); quotient = R(1, 5); }
+                else if (currentLevel === 'medium') { divisor = R(1, 5); quotient = R(1, 10); }
+                else if (currentLevel === 'hard') { divisor = R(6, 10); quotient = R(1, 10); }
+                else { divisor = R(6, 12); quotient = R(6, 12); } // Mahir
                 num1 = quotient * divisor;
                 num2 = divisor;
                 result = quotient;
