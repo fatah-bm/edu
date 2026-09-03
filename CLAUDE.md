@@ -188,7 +188,7 @@ Game pilihan ganda matematika (penjumlahan, pengurangan, perkalian, pembagian) u
 **Generator soal per operasi** (`generateQuestion()`), rentang angka bergantung pada `currentGrade` + `currentLevel`:
 - `add`/`sub` Kelas 1: angka hingga 20 (rentang sama seperti sebelum ada kelas, `sub` selalu `num1=max, num2=min` biar **tidak pernah negatif**).
 - `add` Kelas 2: dua digit, easy dijamin **tanpa menyimpan** (satuan1+satuan2 ≤ 9), medium campuran alami, hard **dipaksa menyimpan** (satuan1+satuan2 ≥ 10), expert/Mahir sama seperti hard tapi salah satu bilangan dibuat jauh lebih besar (3 digit-an).
-- `sub` Kelas 2: dua digit, easy dijamin **tanpa meminjam** (satuan1 ≥ satuan2), medium campuran alami, hard **dipaksa meminjam** (satuan1 < satuan2, tapi puluhan1 > puluhan2 supaya `num1` tetap lebih besar), expert/Mahir sama seperti hard dengan `num1` dibuat jauh lebih besar.
+- `sub` Kelas 2: batas atas `num1` naik bertahap per level — easy ≤19, medium ≤29, hard ≤50, Mahir bebas (3 digit-an). Easy dijamin **tanpa meminjam** (satuan2 ≤ satuan1), medium campuran alami, hard/Mahir **dipaksa meminjam** (satuan1 < satuan2, tapi puluhan1 > puluhan2 supaya `num1` tetap lebih besar).
 - `mul`: selalu Kelas 2, rentang angka + pool pengali naik per level (easy=tabel 1-5, hard=6-10, expert/Mahir=6-12 di kedua faktor).
 - `div`: dibalik dari `mul` — generate `quotient` & `divisor` dulu (rentang sama seperti `mul`), lalu `num1 = quotient * divisor` supaya **hasil bagi selalu bilangan bulat**.
 - Simbol tiap operasi: `+` `-` `x` `:` (bukan `×`/`÷` unicode, konsisten dengan gaya `x` yang sudah dipakai).

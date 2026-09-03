@@ -456,25 +456,22 @@
                     else { a = R(5, 15); b = R(1, 5); }
                     num1 = Math.max(a, b); num2 = Math.min(a, b);
                 } else {
-                    // Kelas 2: pengurangan dua digit, dengan/tanpa meminjam
+                    // Kelas 2: pengurangan dua digit, dengan/tanpa meminjam.
+                    // Batas atas num1 dinaikkan bertahap per level: 19 -> 29 -> 50 -> bebas (Mahir).
                     if (currentLevel === 'easy') {
-                        // Tanpa meminjam dijamin: satuan1 >= satuan2
-                        const ones2 = R(0, 9);
-                        const ones1 = R(ones2, 9);
-                        const tens2 = R(1, 4);
-                        const tens1 = R(tens2, 9);
-                        num1 = tens1 * 10 + ones1;
-                        num2 = tens2 * 10 + ones2;
+                        // num1 hingga 19, tanpa meminjam dijamin (satuan2 <= satuan1)
+                        num1 = R(10, 19);
+                        num2 = R(0, num1 % 10);
                     } else if (currentLevel === 'medium') {
-                        // Campuran alami
-                        const a = R(10, 69), b = R(10, 69);
-                        num1 = Math.max(a, b); num2 = Math.min(a, b);
+                        // num1 hingga 29, campuran alami (kadang meminjam kadang tidak)
+                        num1 = R(11, 29);
+                        num2 = R(1, num1 - 1);
                     } else if (currentLevel === 'hard') {
-                        // Dipaksa meminjam: satuan1 < satuan2, tapi puluhan1 > puluhan2 (num1 tetap lebih besar)
-                        const ones2 = R(1, 9);
-                        const ones1 = R(0, ones2 - 1);
-                        const tens2 = R(1, 8);
-                        const tens1 = R(tens2 + 1, 9);
+                        // num1 hingga 50, dipaksa meminjam: satuan1 < satuan2, puluhan1 > puluhan2
+                        const tens1 = R(1, 4);
+                        const ones1 = R(0, 8);
+                        const ones2 = R(ones1 + 1, 9);
+                        const tens2 = R(0, tens1 - 1);
                         num1 = tens1 * 10 + ones1;
                         num2 = tens2 * 10 + ones2;
                     } else {
