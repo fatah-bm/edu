@@ -79,8 +79,6 @@
         }
         .card-sprite {
             width: 56px; height: 56px;
-            background-image: url('../../../../assets/my-body.png');
-            background-size: 280px 224px;
             background-repeat: no-repeat;
         }
         .card-img { width: 54px; height: 54px; object-fit: contain; }
@@ -123,6 +121,11 @@
         <button class="topic-btn" style="background:#e67e22; box-shadow:0 5px 0 #ca6f1e;" onclick="selectTopic('family')">👪 My Family</button>
         <button class="topic-btn" style="background:#3498db; box-shadow:0 5px 0 #2176ae;" onclick="selectTopic('days')">📅 Days</button>
         <button class="topic-btn" style="background:#9b59b6; box-shadow:0 5px 0 #7d3c98;" onclick="selectTopic('months')">📆 Months</button>
+        <button class="topic-btn" style="background:#16a085; box-shadow:0 5px 0 #0e6655;" onclick="selectTopic('adjective')">📏 Adjective</button>
+        <button class="topic-btn" style="background:#e84393; box-shadow:0 5px 0 #c2185b;" onclick="selectTopic('color')">🎨 Color</button>
+        <button class="topic-btn" style="background:#f39c12; box-shadow:0 5px 0 #c87f0a;" onclick="selectTopic('animal')">🦁 Animal</button>
+        <button class="topic-btn" style="background:#2980b9; box-shadow:0 5px 0 #1f618d;" onclick="selectTopic('facilities')">🏢 Public Facilities</button>
+        <button class="topic-btn" style="background:#795548; box-shadow:0 5px 0 #5d4037;" onclick="selectTopic('house')">🏠 My House</button>
         <button class="topic-btn" style="background:#2c3e50; box-shadow:0 5px 0 #1a252f;" onclick="selectTopic('mixed')">🎲 Mixed</button>
     </div>
 
@@ -148,6 +151,7 @@
         const TOPICS = {
             body: {
                 label: 'My Body', cardType: 'sprite',
+                sheet: '../../../../assets/my-body.png', cols: 5, rows: 4,
                 items: [
                     { word: 'head',      idx: 0  }, { word: 'hair',      idx: 1  },
                     { word: 'eyes',      idx: 2  }, { word: 'ears',      idx: 3  },
@@ -203,9 +207,64 @@
                     { word: 'November',  v: 'NOV', color: '#636e72' },
                     { word: 'December',  v: 'DEC', color: '#0984e3' },
                 ]
+            },
+            adjective: {
+                label: 'Adjective', cardType: 'sprite',
+                sheet: '../../../../assets/adjective.png', cols: 5, rows: 3,
+                items: [
+                    { word: 'big', idx: 0 }, { word: 'small', idx: 1 }, { word: 'tall', idx: 2 },
+                    { word: 'short', idx: 3 }, { word: 'long', idx: 4 }, { word: 'large', idx: 5 },
+                    { word: 'thin', idx: 6 }, { word: 'fat', idx: 7 }, { word: 'slow', idx: 8 },
+                    { word: 'high', idx: 9 }, { word: 'low', idx: 10 }, { word: 'pretty', idx: 11 },
+                    { word: 'cute', idx: 12 }, { word: 'handsome', idx: 13 },
+                ]
+            },
+            color: {
+                label: 'Color', cardType: 'sprite',
+                sheet: '../../../../assets/color.png', cols: 4, rows: 2,
+                items: [
+                    { word: 'red', idx: 0 }, { word: 'orange', idx: 1 }, { word: 'green', idx: 2 },
+                    { word: 'yellow', idx: 3 }, { word: 'blue', idx: 4 }, { word: 'purple', idx: 5 },
+                    { word: 'black', idx: 6 }, { word: 'white', idx: 7 },
+                ]
+            },
+            animal: {
+                label: 'Animal', cardType: 'sprite',
+                sheet: '../../../../assets/animal.png', cols: 5, rows: 3,
+                items: [
+                    { word: 'monkey', idx: 0 }, { word: 'dolphin', idx: 1 }, { word: 'tiger', idx: 2 },
+                    { word: 'rhinoceros', idx: 3 }, { word: 'orangutan', idx: 4 }, { word: 'lion', idx: 5 },
+                    { word: 'kangaroo', idx: 6 }, { word: 'bear', idx: 7 }, { word: 'penguin', idx: 8 },
+                    { word: 'peacock', idx: 9 }, { word: 'zebra', idx: 10 }, { word: 'wolf', idx: 11 },
+                    { word: 'elephant', idx: 12 }, { word: 'giraffe', idx: 13 }, { word: 'whale', idx: 14 },
+                ]
+            },
+            facilities: {
+                label: 'Public Facilities', cardType: 'sprite',
+                sheet: '../../../../assets/public-facilities.png', cols: 5, rows: 3,
+                items: [
+                    { word: 'mosque', idx: 0 }, { word: 'airport', idx: 1 }, { word: 'bank', idx: 2 },
+                    { word: 'market', idx: 3 }, { word: 'supermarket', idx: 4 }, { word: 'school', idx: 5 },
+                    { word: 'hospital', idx: 6 }, { word: 'post office', idx: 7 }, { word: 'police office', idx: 8 },
+                    { word: 'restaurant', idx: 9 }, { word: 'hotel', idx: 10 }, { word: 'library', idx: 11 },
+                    { word: 'train station', idx: 12 }, { word: 'bus station', idx: 13 },
+                ]
+            },
+            house: {
+                label: 'My House', cardType: 'sprite',
+                sheet: '../../../../assets/my-house.png', cols: 5, rows: 4,
+                items: [
+                    { word: 'door', idx: 0 }, { word: 'window', idx: 1 }, { word: 'floor', idx: 2 },
+                    { word: 'gate', idx: 3 }, { word: 'roof', idx: 4 }, { word: 'garage', idx: 5 },
+                    { word: 'wall', idx: 6 }, { word: 'porch', idx: 7 }, { word: 'stairs', idx: 8 },
+                    { word: 'garden', idx: 9 }, { word: 'chimney', idx: 10 }, { word: 'living room', idx: 11 },
+                    { word: 'dining room', idx: 12 }, { word: 'bedroom', idx: 13 }, { word: 'bathroom', idx: 14 },
+                    { word: 'kitchen', idx: 15 }, { word: 'fireplace', idx: 16 },
+                ]
             }
         };
-        const TOPIC_KEYS = ['body', 'family', 'days', 'months'];
+        const TOPIC_KEYS = ['body', 'family', 'days', 'months', 'adjective', 'color', 'animal', 'facilities', 'house'];
+        const MIXED_PAIRS = 8;
 
         let flipped       = [];
         let matchedCount  = 0;
@@ -231,13 +290,13 @@
             // Build item pool
             let selectedItems;
             if (key === 'mixed') {
-                // 2 random items from each topic = 8 pairs
-                selectedItems = [];
+                // Random items pooled from every topic, capped at MIXED_PAIRS pairs
+                let allItems = [];
                 TOPIC_KEYS.forEach(tk => {
-                    const shuffled = [...TOPICS[tk].items].sort(() => Math.random() - 0.5);
-                    shuffled.slice(0, 2).forEach(item => selectedItems.push({ ...item, topicKey: tk }));
+                    TOPICS[tk].items.forEach(item => allItems.push({ ...item, topicKey: tk }));
                 });
-                selectedItems.sort(() => Math.random() - 0.5);
+                allItems.sort(() => Math.random() - 0.5);
+                selectedItems = allItems.slice(0, MIXED_PAIRS);
             } else {
                 const pool = [...TOPICS[key].items].sort(() => Math.random() - 0.5);
                 const n = Math.min(8, pool.length);
@@ -273,9 +332,9 @@
             const topic = TOPICS[card.topicKey];
             switch (topic.cardType) {
                 case 'sprite': {
-                    const bx = (card.item.idx % 5) * 56;
-                    const by = Math.floor(card.item.idx / 5) * 56;
-                    return `<div class="card-sprite" style="background-position:-${bx}px -${by}px;"></div>`;
+                    const bx = (card.item.idx % topic.cols) * 56;
+                    const by = Math.floor(card.item.idx / topic.cols) * 56;
+                    return `<div class="card-sprite" style="background-image:url('${topic.sheet}'); background-size:${topic.cols * 56}px ${topic.rows * 56}px; background-position:-${bx}px -${by}px;"></div>`;
                 }
                 case 'img':
                     return `<img class="card-img" src="${card.item.v}" alt="${card.item.word}" onerror="this.outerHTML='<span class=\\'card-emoji\\'>${card.item.emoji}</span>'">`;
