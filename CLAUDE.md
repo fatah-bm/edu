@@ -142,6 +142,8 @@ games/english/words/
 - `days/` — tidak pakai gambar, badge warna bulat + singkatan (SUN/MON/...), grid 4 kolom, tanpa pagination
 - `months/` — tidak pakai gambar, badge warna kotak + singkatan (JAN/FEB/...), grid 3 kolom, 6 per halaman
 - `singular-plural/` — layout 2 kolom (kiri=singular/biru, kanan=plural/ungu), 3 pasang per halaman; plural ditampilkan dengan 2 gambar kecil
+- `adjective/`, `animal/`, `public-facilities/`, `my-house/` — visual CSS spritesheet lokal per topik (`assets/adjective.png`, `assets/animal.png`, `assets/public-facilities.png`, `assets/my-house.png`), pola sama seperti `my-body/` (grid 5 kolom internal sheet, cell 128px sumber/64px tampil, `background-position` dihitung dari index kata). Tiap kartu tambah `<small>` berisi arti bahasa Indonesia (memakai style `.card small` bersama dari `shared.css`, bukan class baru).
+- `color/` — sama seperti di atas tapi sheet 4 kolom x 2 baris (`assets/color.png`), tanpa pagination (8 kata muat dalam 1 halaman, grid 4 kolom, mengikuti pola `days/`)
 
 ---
 

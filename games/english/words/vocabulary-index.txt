@@ -1,0 +1,432 @@
+ENGLISH VOCABULARY INDEX
+========================
+File ini berisi daftar seluruh materi kosakata di games/english/words/
+Format per topik: word | emoji | icons8_url (jika ada)
+Icons8 base URL: https://img.icons8.com/color/96/{name}.png
+Topik tanpa gambar ditandai dengan "-"
+
+========================================
+ICON KARTU TOPIK (HUB PAGES)
+Icons8 base URL: https://img.icons8.com/color/96/{name}.png
+Status: ✅ ada | ⚠️ perlu dicek | ❌ pakai icon salah/duplikat
+========================================
+
+--- index.html (root hub) ---
+halaman        | icons8 name   | status
+---------------|---------------|-------
+Matematika     | math          | ✅
+English        | reading       | ✅
+
+--- games/english/index.html ---
+halaman        | icons8 name   | status
+---------------|---------------|-------
+Words          | open-book     | ⚠️
+Conversation   | chat          | ✅
+
+--- games/english/words/index.html ---
+halaman             | icons8 name    | status
+--------------------|----------------|-------
+My Body             | user           | ⚠️
+My Family           | family         | ✅
+Numbers 1-20        | 123            | ⚠️
+Alphabet A-Z        | abc            | ⚠️
+Days                | sun            | ⚠️
+Months              | calendar       | ✅
+Singular & Plural   | compare        | ⚠️
+Adjective           | ruler          | ⚠️
+Color               | paint-palette  | ⚠️
+Animal              | lion           | ⚠️
+Public Facilities   | city-buildings | ⚠️
+My House            | house          | ⚠️
+
+--- games/english/conversation/index.html ---
+(menggunakan emoji langsung, bukan Icons8)
+halaman             | emoji
+--------------------|------
+Greetings           | 👋
+Do You Have?        | 🤔
+What Time Is It?    | 🕐
+
+--- Catatan ---
+Semua icon hub sudah diperbarui. Status ⚠️ artinya nama sudah diganti ke
+alternatif yang lebih mungkin ada, tapi belum diverifikasi langsung di browser.
+
+========================================
+TOPIK: My Body (my-body/)
+Jumlah kata: 19
+Visual: CSS spritesheet lokal — assets/my-body.png
+Spritesheet: 5 kolom x 4 baris, tiap cell 128x128px, ditampilkan 64x64px
+Urutan (kiri→kanan, atas→bawah):
+========================================
+index | word
+------|----------
+0     | head
+1     | hair
+2     | eyes
+3     | ears
+4     | nose
+5     | mouth
+6     | cheek
+7     | chin
+8     | neck
+9     | shoulders
+10    | elbow
+11    | fingers
+12    | hands
+13    | stomach
+14    | knees
+15    | legs
+16    | toes
+17    | feet
+18    | foot
+
+========================================
+TOPIK: My Family (my-family/)
+Jumlah kata: 9
+Visual: Icons8 image, fallback ke emoji
+Status: ✅ ada | ⚠️ perlu dicek | ❌ kemungkinan tidak ada
+========================================
+word         | emoji | icons8 name | status
+-------------|-------|-------------|-------
+father       | 👨    | father      | ⚠️
+mother       | 👩    | mother      | ⚠️
+brother      | 👦    | brother     | ⚠️
+sister       | 👧    | sister      | ⚠️
+grandfather  | 👴    | grandfather | ⚠️
+grandmother  | 👵    | grandmother | ⚠️
+baby         | 👶    | baby        | ✅
+son          | 👦    | boy         | ⚠️
+daughter     | 👧    | girl        | ⚠️
+
+========================================
+TOPIK: Numbers 1-20 (numbers-1-20/)
+Jumlah: 20
+Visual: Angka besar sebagai visual (tidak pakai gambar/emoji)
+========================================
+angka | kata
+------|----------
+1     | one
+2     | two
+3     | three
+4     | four
+5     | five
+6     | six
+7     | seven
+8     | eight
+9     | nine
+10    | ten
+11    | eleven
+12    | twelve
+13    | thirteen
+14    | fourteen
+15    | fifteen
+16    | sixteen
+17    | seventeen
+18    | eighteen
+19    | nineteen
+20    | twenty
+
+========================================
+TOPIK: Alphabet A-Z (alphabet/)
+Jumlah: 26
+Visual: Huruf kapital + lowercase (tidak pakai gambar/emoji)
+========================================
+A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m,
+N n, O o, P p, Q q, R r, S s, T t, U u, V v, W w, X x, Y y, Z z
+
+========================================
+TOPIK: Days (days/)
+Jumlah: 7
+Visual: Badge warna bulat + singkatan (tidak pakai gambar/emoji)
+========================================
+word       | abbr | warna badge
+-----------|------|------------
+Sunday     | SUN  | #ff6b6b
+Monday     | MON  | #ffa552
+Tuesday    | TUE  | #ffd166
+Wednesday  | WED  | #2ecc71
+Thursday   | THU  | #4ecdc4
+Friday     | FRI  | #3498db
+Saturday   | SAT  | #9b59b6
+
+========================================
+TOPIK: Months (months/)
+Jumlah: 12
+Visual: Badge warna kotak + singkatan (tidak pakai gambar/emoji)
+========================================
+word       | abbr | warna badge
+-----------|------|------------
+January    | JAN  | #74b9ff
+February   | FEB  | #a29bfe
+March      | MAR  | #55efc4
+April      | APR  | #81ecec
+May        | MAY  | #2ecc71
+June       | JUN  | #ffd166
+July       | JUL  | #ff9f43
+August     | AUG  | #ff6b6b
+September  | SEP  | #e17055
+October    | OCT  | #d35400
+November   | NOV  | #636e72
+December   | DEC  | #74b9ff
+
+========================================
+TOPIK: Singular & Plural (singular-plural/)
+Jumlah pasang: 13
+Visual: Icons8 image, fallback ke emoji
+Layout: 2 kolom (singular kiri / plural kanan), 3 pasang per halaman
+Status: ✅ ada | ⚠️ perlu dicek | ❌ kemungkinan tidak ada
+========================================
+singular    | plural        | akhiran | emoji | icons8 name | status
+------------|---------------|---------|-------|-------------|-------
+onion       | onions        | s       | 🧅    | onion       | ✅
+strawberry  | strawberries  | ies     | 🍓    | strawberry  | ✅
+tomato      | tomatoes      | es      | 🍅    | tomato      | ✅
+carrot      | carrots       | s       | 🥕    | carrot      | ✅
+cabbage     | cabbages      | s       | 🥬    | cabbage     | ✅
+broccoli    | broccolis     | s       | 🥦    | broccoli    | ✅
+donut       | donuts        | s       | 🍩    | donut       | ✅
+leaf        | leaves        | ves     | 🍃    | leaf        | ✅
+knife       | knives        | ves     | 🔪    | knife       | ✅
+book        | books         | s       | 📖    | book        | ✅
+pen         | pens          | s       | 🖊️    | pen         | ✅
+pencil      | pencils       | s       | ✏️    | pencil      | ✅
+toy         | toys          | s       | 🧸    | toy         | ⚠️
+
+========================================
+TOPIK: Adjective (adjective/)
+Jumlah kata: 14
+Visual: CSS spritesheet lokal — assets/adjective.png (BELUM DIBUAT, lihat prompt AI di bawah)
+Spritesheet: 5 kolom x 3 baris, cell sumber 128x128px, tampil 64x64px
+Sel terakhir (index 14, baris 3 kolom 5) tidak dipakai/kosong
+========================================
+index | word     | arti
+------|----------|------------------
+0     | big      | besar
+1     | small    | kecil
+2     | tall     | tinggi
+3     | short    | pendek
+4     | long     | panjang
+5     | large    | besar/luas
+6     | thin     | kurus/tipis
+7     | fat      | gemuk
+8     | slow     | lambat
+9     | high     | tinggi (letak)
+10    | low      | rendah
+11    | pretty   | cantik
+12    | cute     | lucu/imut
+13    | handsome | tampan
+
+========================================
+TOPIK: Color (color/)
+Jumlah kata: 8
+Visual: CSS spritesheet lokal — assets/color.png (BELUM DIBUAT, lihat prompt AI di bawah)
+Spritesheet: 4 kolom x 2 baris, cell sumber 128x128px, tampil 64x64px
+Tanpa pagination (8 kata muat 1 halaman)
+========================================
+index | word   | arti
+------|--------|------
+0     | red    | merah
+1     | orange | oranye
+2     | green  | hijau
+3     | yellow | kuning
+4     | blue   | biru
+5     | purple | ungu
+6     | black  | hitam
+7     | white  | putih
+
+========================================
+TOPIK: Animal (animal/)
+Jumlah kata: 15
+Visual: CSS spritesheet lokal — assets/animal.png (BELUM DIBUAT, lihat prompt AI di bawah)
+Spritesheet: 5 kolom x 3 baris, cell sumber 128x128px, tampil 64x64px (pas 15/15, tidak ada sel kosong)
+========================================
+index | word       | arti
+------|------------|-------------
+0     | monkey     | monyet
+1     | dolphin    | lumba-lumba
+2     | tiger      | harimau
+3     | rhinoceros | badak
+4     | orangutan  | orangutan
+5     | lion       | singa
+6     | kangaroo   | kanguru
+7     | bear       | beruang
+8     | penguin    | pinguin
+9     | peacock    | merak
+10    | zebra      | zebra
+11    | wolf       | serigala
+12    | elephant   | gajah
+13    | giraffe    | jerapah
+14    | whale      | paus
+
+========================================
+TOPIK: Public Facilities (public-facilities/)
+Jumlah kata: 14
+Visual: CSS spritesheet lokal — assets/public-facilities.png (BELUM DIBUAT, lihat prompt AI di bawah)
+Spritesheet: 5 kolom x 3 baris, cell sumber 128x128px, tampil 64x64px
+Sel terakhir (index 14, baris 3 kolom 5) tidak dipakai/kosong
+========================================
+index | word            | arti
+------|-----------------|---------------
+0     | mosque          | masjid
+1     | airport         | bandara
+2     | bank            | bank
+3     | market          | pasar
+4     | supermarket     | swalayan
+5     | school          | sekolah
+6     | hospital        | rumah sakit
+7     | post office     | kantor pos
+8     | police office   | kantor polisi
+9     | restaurant      | restoran
+10    | hotel           | hotel
+11    | library         | perpustakaan
+12    | train station   | stasiun kereta
+13    | bus station     | terminal bus
+
+========================================
+TOPIK: My House (my-house/)
+Jumlah kata: 17
+Visual: CSS spritesheet lokal — assets/my-house.png (BELUM DIBUAT, lihat prompt AI di bawah)
+Spritesheet: 5 kolom x 4 baris, cell sumber 128x128px, tampil 64x64px
+3 sel terakhir (index 17-19) tidak dipakai/kosong
+========================================
+index | word         | arti
+------|--------------|----------------
+0     | door         | pintu
+1     | window       | jendela
+2     | floor        | lantai
+3     | gate         | gerbang
+4     | roof         | atap
+5     | garage       | garasi
+6     | wall         | dinding
+7     | porch        | teras
+8     | stairs       | tangga
+9     | garden       | taman
+10    | chimney      | cerobong asap
+11    | living room  | ruang tamu
+12    | dining room  | ruang makan
+13    | bedroom      | kamar tidur
+14    | bathroom     | kamar mandi
+15    | kitchen      | dapur
+16    | fireplace    | perapian
+
+========================================
+PROMPT AI UNTUK MEMBUAT SPRITESHEET (5 gambar di atas)
+========================================
+Kelima topik di atas BELUM punya file gambar (assets/adjective.png, color.png,
+animal.png, public-facilities.png, my-house.png) — index.html sudah mereferensikan
+path tsb tapi akan tampil kosong sampai file dibuat & ditaruh di assets/.
+
+Gaya rujukan: assets/my-body.png (lihat gambar itu untuk contoh gaya — kalau tool AI
+mendukung reference image, lampirkan file itu). Kalau tidak, deskripsi gayanya:
+ilustrasi flat/vector ala buku anak, garis tebal bersih, cel-shading lembut, warna
+cerah ceria, bentuk membulat ramah, satu subjek per sel dengan padding merata,
+TANPA teks/huruf/angka/watermark, TIDAK fotorealistis. Tiap sel punya background
+pastel solid (bergantian biru/ungu/hijau/oranye pastel lembut per baris, seperti
+di my-body.png).
+
+--- Prompt 1: Adjective (assets/adjective.png) ---
+Create a single flat sprite-sheet image, 5 columns x 3 rows (15 cells total,
+image 640x384px, each cell exactly 128x128px). Style: flat vector children's-book
+illustration matching a friendly rounded thick-outlined cartoon look (soft
+cel-shading, bright cheerful colors, centered single subject per cell, even
+padding), no text/letters/numbers/watermarks anywhere, not photorealistic. Each
+cell has a solid flat pastel background (rotate soft pastel blue/purple/green
+per row). Fill cells left-to-right, top-to-bottom, in this exact order, one
+simple visual concept per cell illustrating the adjective (no text/labels):
+1. big — a very large elephant filling most of the cell
+2. small — a tiny ant/mouse
+3. tall — a tall giraffe stretching upward
+4. short — a small short potted plant/child
+5. long — a long snake stretched out
+6. large — a big balloon/whale shape
+7. thin — a thin pencil or thin stick figure
+8. fat — a round chubby hippo
+9. slow — a turtle/snail
+10. high — a mountain peak or a kite flying high
+11. low — a small arrow pointing down / a worm low on the ground
+12. pretty — a pretty flower
+13. cute — a cute kitten/puppy face
+14. handsome — a smiling well-dressed boy/prince character
+Leave the 15th (last) cell empty/blank (same pastel background, no subject).
+
+--- Prompt 2: Color (assets/color.png) ---
+Create a single flat sprite-sheet image, 4 columns x 2 rows (8 cells total,
+image 512x256px, each cell exactly 128x128px). Style: flat vector children's-book
+illustration, thick clean outlines, soft cel-shading, no text/letters/numbers/
+watermarks anywhere, not photorealistic. Each cell shows one simple rounded
+paint-blob / paint-swatch shape filled with a solid color, centered with even
+padding, on a plain neutral light-gray/white cell background (so the color itself
+stays the clearest signal). Fill cells left-to-right, top-to-bottom, in this exact
+order and exact color:
+1. red (#e74c3c)
+2. orange (#ff9f43)
+3. green (#2ecc71)
+4. yellow (#ffd166)
+5. blue (#3498db)
+6. purple (#9b59b6)
+7. black (#2c3e50)
+8. white (#ffffff) — give this swatch a thin gray outline so it stays visible
+   against the light cell background.
+
+--- Prompt 3: Animal (assets/animal.png) ---
+Create a single flat sprite-sheet image, 5 columns x 3 rows (15 cells total,
+image 640x384px, each cell exactly 128x128px). Style: flat vector children's-book
+illustration matching a friendly rounded thick-outlined cartoon look (soft
+cel-shading, bright cheerful colors, centered single subject per cell, even
+padding), no text/letters/numbers/watermarks anywhere, not photorealistic. Each
+cell has a solid flat pastel background (rotate soft pastel blue/green/yellow
+per row). Fill cells left-to-right, top-to-bottom, in this exact order, one cute
+friendly-style animal face/body per cell:
+1. monkey  2. dolphin  3. tiger  4. rhinoceros  5. orangutan
+6. lion  7. kangaroo  8. bear  9. penguin  10. peacock
+11. zebra  12. wolf  13. elephant  14. giraffe  15. whale
+
+--- Prompt 4: Public Facilities (assets/public-facilities.png) ---
+Create a single flat sprite-sheet image, 5 columns x 3 rows (15 cells total,
+image 640x384px, each cell exactly 128x128px). Style: flat vector children's-book
+illustration, simple friendly building/icon shapes, thick clean outlines, soft
+cel-shading, bright cheerful colors, centered single subject per cell, even
+padding, no text/letters/numbers/watermarks anywhere, not photorealistic. Each
+cell has a solid flat pastel background (rotate soft pastel blue/orange per row).
+Fill cells left-to-right, top-to-bottom, in this exact order, one simple building
+icon per cell:
+1. mosque (dome + crescent)
+2. airport (airplane taking off)
+3. bank (building with columns)
+4. market (small stall with awning)
+5. supermarket (shopping cart in front of a store)
+6. school (building with flag)
+7. hospital (building with red cross)
+8. post office (building with envelope/mailbox)
+9. police office (building with police badge/star)
+10. restaurant (building with fork & spoon sign)
+11. hotel (building with bed icon)
+12. library (building with open book)
+13. train station (platform with train)
+14. bus station (bus at a stop sign)
+Leave the 15th (last) cell empty/blank (same pastel background, no subject).
+
+--- Prompt 5: My House (assets/my-house.png) ---
+Create a single flat sprite-sheet image, 5 columns x 4 rows (20 cells total,
+image 640x512px, each cell exactly 128x128px). Style: flat vector children's-book
+illustration, simple friendly household objects/rooms, thick clean outlines, soft
+cel-shading, bright cheerful colors, centered single subject per cell, even
+padding, no text/letters/numbers/watermarks anywhere, not photorealistic. Each
+cell has a solid flat pastel background (rotate soft pastel blue/purple/green/
+orange per row, like assets/my-body.png). Fill cells left-to-right, top-to-bottom,
+in this exact order, one simple object/room icon per cell:
+1. door  2. window  3. floor (wood/tile pattern)  4. gate  5. roof
+6. garage (with a car)  7. wall (brick texture)  8. porch  9. stairs  10. garden
+   (with a small tree/flowers)
+11. chimney (on a rooftop, with smoke)  12. living room (sofa)
+13. dining room (table with chairs)  14. bedroom (bed)  15. bathroom (bathtub)
+16. kitchen (stove)  17. fireplace (with fire)
+Leave the last 3 cells (index 18-20) empty/blank (same pastel background, no
+subject).
+
+--- Catatan pemakaian ---
+Setelah gambar jadi, simpan sebagai PNG di assets/<nama>.png (nama file harus
+persis sama dengan yang direferensikan di masing-masing index.html: adjective.png,
+color.png, animal.png, public-facilities.png, my-house.png). Tidak perlu ubah kode
+index.html — background-position sudah dihitung otomatis dari urutan array `words`
+di tiap file, yang urutannya sama persis dengan urutan prompt di atas.

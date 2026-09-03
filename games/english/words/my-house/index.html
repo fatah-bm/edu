@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My House</title>
+    <link rel="stylesheet" href="../../../../assets/shared.css">
+    <style>
+        .subtitle {
+            color: #777;
+            font-size: 15px;
+            margin: 0 0 16px 0;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            max-width: 560px;
+            margin: 0 auto;
+        }
+        .sprite {
+            width: 64px;
+            height: 64px;
+            background-image: url('../../../../assets/my-house.png');
+            background-size: 320px 256px;
+            display: block;
+            margin: 0 auto 8px auto;
+        }
+        .card p {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+            word-break: break-word;
+        }
+    </style>
+</head>
+<body data-theme="english">
+    <div id="topbar"></div>
+    <script src="../../../../assets/shared.js"></script>
+    <script>
+        initTopBar({ title: 'My House', backHref: '../', homeHref: '../../../../', audio: true });
+    </script>
+    <p class="subtitle">How to pronounce these words? Tap a card!</p>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="pagination">
+        <button class="btn-page" id="btn-prev" onclick="changePage(-1)">◀</button>
+        <span class="page-indicator" id="page-indicator"></span>
+        <button class="btn-page" id="btn-next" onclick="changePage(1)">▶</button>
+    </div>
+
+    <script>
+        const words = [
+            { word: 'door',         meaning: 'pintu' },
+            { word: 'window',       meaning: 'jendela' },
+            { word: 'floor',        meaning: 'lantai' },
+            { word: 'gate',         meaning: 'gerbang' },
+            { word: 'roof',         meaning: 'atap' },
+            { word: 'garage',       meaning: 'garasi' },
+            { word: 'wall',         meaning: 'dinding' },
+            { word: 'porch',        meaning: 'teras' },
+            { word: 'stairs',       meaning: 'tangga' },
+            { word: 'garden',       meaning: 'taman' },
+            { word: 'chimney',      meaning: 'cerobong asap' },
+            { word: 'living room',  meaning: 'ruang tamu' },
+            { word: 'dining room',  meaning: 'ruang makan' },
+            { word: 'bedroom',      meaning: 'kamar tidur' },
+            { word: 'bathroom',     meaning: 'kamar mandi' },
+            { word: 'kitchen',      meaning: 'dapur' },
+            { word: 'fireplace',    meaning: 'perapian' },
+        ];
+
+        const PER_PAGE = 6;
+        const SHEET_COLS = 5;
+        let currentPage = 0;
+        const totalPages = Math.ceil(words.length / PER_PAGE);
+
+        function renderPage() {
+            const grid = document.getElementById('grid');
+            const start = currentPage * PER_PAGE;
+            const pageWords = words.slice(start, start + PER_PAGE);
+
+            grid.innerHTML = pageWords.map((item, i) => {
+                const idx = start + i;
+                const bx = (idx % SHEET_COLS) * 64;
+                const by = Math.floor(idx / SHEET_COLS) * 64;
+                return `
+                <div class="card card--leaf" data-word="${item.word}">
+                    <div class="sprite" style="background-position: -${bx}px -${by}px;"></div>
+                    <p>${item.word.charAt(0).toUpperCase() + item.word.slice(1)}</p>
+                    <small>${item.meaning}</small>
+                </div>`;
+            }).join('');
+
+            grid.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('click', () => speak(card.dataset.word, card));
+            });
+
+            document.getElementById('page-indicator').textContent =
+                `${currentPage + 1} / ${totalPages}`;
+            document.getElementById('btn-prev').disabled = currentPage === 0;
+            document.getElementById('btn-next').disabled = currentPage === totalPages - 1;
+        }
+
+        function changePage(dir) {
+            currentPage += dir;
+            renderPage();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function speak(word, card) {
+            if (!isAudioEnabled) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.85;
+            utterance.pitch = 1.2;
+            card.classList.add('playing');
+            utterance.onend = () => card.classList.remove('playing');
+            utterance.onerror = () => card.classList.remove('playing');
+            window.speechSynthesis.speak(utterance);
+        }
+
+        renderPage();
+    </script>
+</body>
+</html>
