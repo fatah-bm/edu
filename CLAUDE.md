@@ -172,16 +172,23 @@ Jumlah kotak ditentukan otomatis oleh jumlah digit angka (`getPositions()` baca 
 
 ## Game: `games/math/tambahkali`
 
-Game pilihan ganda matematika (penjumlahan & perkalian) untuk anak SD.
+Game pilihan ganda matematika (penjumlahan, pengurangan, perkalian, pembagian) untuk anak SD. Hub `games/math/index.html` menyebutnya "Tambah, Kurang, Kali & Bagi" meski folder tetap `tambahkali/` (nama folder historis, tidak di-rename supaya link lama tidak putus).
 
 **Flow layar:** `screen-type` → `screen-operation` → `screen-level` → `screen-game` → `screen-result`
 
 **State game** dikelola via variabel global di `<script>` halaman (sudah inline, mengikuti konvensi game lain — dulu sempat pakai `style.css`/`script.js` eksternal, sudah dimigrasikan):
 - `gameType`: `'practice'` | `'challenge'` — practice tanpa timer, challenge 120 detik
-- `currentOperation`: `'add'` | `'mul'` | `'mix'`
+- `currentOperation`: `'add'` | `'sub'` | `'mul'` | `'div'` | `'mix'` | `'find'` — judul & emoji tiap operasi dipusatkan di `OP_TITLES`/`OP_EMOJIS` (bukan ternary bercabang, supaya DRY saat menambah operasi baru). `mix` (Campuran) dan `find` (Cari Yang Hilang) mengacak salah satu dari 4 operasi dasar lewat `pickRandomBaseOp()` — bukan operasi tersendiri.
 - `currentLevel`: `'easy'` | `'medium'` | `'hard'`
 - `currentQuestionData`: object state soal aktif (`qText`, `trueAns`, `mistakes`, `solved`)
 - `gameHistory`: array soal yang sudah selesai, dipakai untuk layar review
+
+**Generator soal per operasi** (`generateQuestion()`), semua dibuat agar kesulitannya sepadan dengan pasangan operasinya:
+- `add`: penjumlahan biasa, rentang angka naik per level (1-5 → 1-10 → 5-15).
+- `sub`: pakai rentang angka yang sama seperti `add`, lalu `num1 = max, num2 = min` — hasil **tidak pernah negatif** (penting untuk anak SD).
+- `mul`: rentang angka + pool pengali per level (easy pakai pool `[1,2,10]`).
+- `div`: dibalik dari `mul` — generate `quotient` & `divisor` dulu (rentang sama seperti pengali `mul`), lalu `num1 = quotient * divisor` supaya **hasil bagi selalu bilangan bulat**.
+- Simbol tiap operasi: `+` `-` `x` `:` (bukan `×`/`÷` unicode, konsisten dengan gaya `x` yang sudah dipakai).
 
 **Scoring:** +10 jawaban benar, -5 jawaban salah (minimum 0). Soal tidak diganti saat salah — anak bisa mencoba lagi sampai benar.
 

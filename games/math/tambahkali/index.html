@@ -52,7 +52,9 @@
 
         /* Palet Warna Tombol */
         .btn-add { background-color: #ff6b6b; }
+        .btn-sub { background-color: #ff9f43; }
         .btn-mul { background-color: #4ecdc4; }
+        .btn-div { background-color: #00b894; }
         .btn-mix { background-color: #9b59b6; }
         .btn-mode-prac { background-color: #3498db; }
         .btn-mode-chal { background-color: #e67e22; }
@@ -163,7 +165,9 @@
     <div id="screen-operation" class="box-container" style="display: none;">
         <h2>Pilih Pelajaran:</h2>
         <button class="btn btn-add" onclick="selectOperation('add')">➕ Penjumlahan</button>
+        <button class="btn btn-sub" onclick="selectOperation('sub')">➖ Pengurangan</button>
         <button class="btn btn-mul" onclick="selectOperation('mul')">✖️ Perkalian</button>
+        <button class="btn btn-div" onclick="selectOperation('div')">➗ Pembagian</button>
         <button class="btn btn-mix" onclick="selectOperation('mix')">🎲 Campuran</button>
         <button class="btn btn-find" onclick="selectOperation('find')">🔍 Cari Yang Hilang</button>
         <button class="btn btn-wizard-back" onclick="showScreen('screen-type')">⬅️ Kembali</button>
@@ -261,10 +265,22 @@
             showScreen('screen-operation');
         }
 
+        const OP_TITLES = {
+            add: 'Penjumlahan', sub: 'Pengurangan', mul: 'Perkalian', div: 'Pembagian',
+            mix: 'Campuran', find: 'Cari Yang Hilang'
+        };
+        const OP_EMOJIS = {
+            add: '➕', sub: '➖', mul: '✖️', div: '➗', mix: '🎲', find: '🔍'
+        };
+        // Operasi dasar yang dipakai untuk mengacak soal di mode Campuran & Cari Yang Hilang
+        const BASE_OPS = ['add', 'sub', 'mul', 'div'];
+        function pickRandomBaseOp() {
+            return BASE_OPS[Math.floor(Math.random() * BASE_OPS.length)];
+        }
+
         function selectOperation(op) {
             currentOperation = op;
-            let title = op === 'add' ? 'Penjumlahan' : (op === 'mul' ? 'Perkalian' : (op === 'mix' ? 'Campuran' : 'Cari Yang Hilang'));
-            document.getElementById('level-title').innerText = `Level ${title}:`;
+            document.getElementById('level-title').innerText = `Level ${OP_TITLES[op]}:`;
             showScreen('screen-level');
         }
 
@@ -274,9 +290,8 @@
             gameHistory = [];
             document.getElementById('score').innerText = score;
 
-            let opName = currentOperation === 'add' ? '➕' : (currentOperation === 'mul' ? '✖️' : (currentOperation === 'mix' ? '🎲' : '🔍'));
             let lvlName = lvl === 'easy' ? 'Mudah' : (lvl === 'medium' ? 'Sedang' : 'Sulit');
-            document.getElementById('game-info').innerText = `${opName} | ${lvlName}`;
+            document.getElementById('game-info').innerText = `${OP_EMOJIS[currentOperation]} | ${lvlName}`;
 
             if (gameType === 'challenge') {
                 document.getElementById('timer-badge').style.display = 'inline-block';
@@ -340,10 +355,10 @@
             let activeOp = currentOperation;
             const isFindMode = activeOp === 'find';
             if (activeOp === 'mix' || activeOp === 'find') {
-                activeOp = Math.random() > 0.5 ? 'add' : 'mul';
+                activeOp = pickRandomBaseOp();
             }
 
-            let symbol = activeOp === 'add' ? '+' : 'x';
+            let symbol = { add: '+', sub: '-', mul: 'x', div: ':' }[activeOp];
             let result = 0;
 
             if (activeOp === 'add') {
@@ -359,6 +374,24 @@
                 }
                 result = num1 + num2;
             }
+            else if (activeOp === 'sub') {
+                // Pakai rentang angka yang sama seperti penjumlahan, lalu urutkan
+                // num1 >= num2 supaya hasilnya tidak pernah negatif untuk anak SD.
+                let a, b;
+                if (currentLevel === 'easy') {
+                    a = Math.floor(Math.random() * 5) + 1;
+                    b = Math.floor(Math.random() * 5) + 1;
+                } else if (currentLevel === 'medium') {
+                    a = Math.floor(Math.random() * 10) + 1;
+                    b = Math.floor(Math.random() * 10) + 1;
+                } else {
+                    a = Math.floor(Math.random() * 11) + 5;
+                    b = Math.floor(Math.random() * 11) + 5;
+                }
+                num1 = Math.max(a, b);
+                num2 = Math.min(a, b);
+                result = num1 - num2;
+            }
             else if (activeOp === 'mul') {
                 if (currentLevel === 'easy') {
                     const easyPool = [1, 2, 10];
@@ -373,6 +406,25 @@
                 }
                 if (Math.random() > 0.5) { let temp = num1; num1 = num2; num2 = temp; }
                 result = num1 * num2;
+            }
+            else if (activeOp === 'div') {
+                // Dibalik dari perkalian (dividen = hasil kali) supaya hasil bagi
+                // selalu bilangan bulat, dengan tingkat kesulitan mengikuti pola perkalian.
+                let quotient, divisor;
+                if (currentLevel === 'easy') {
+                    const easyPool = [1, 2, 10];
+                    quotient = Math.floor(Math.random() * 10) + 1;
+                    divisor = easyPool[Math.floor(Math.random() * easyPool.length)];
+                } else if (currentLevel === 'medium') {
+                    quotient = Math.floor(Math.random() * 10) + 1;
+                    divisor = Math.floor(Math.random() * 5) + 1;
+                } else {
+                    quotient = Math.floor(Math.random() * 10) + 1;
+                    divisor = Math.floor(Math.random() * 5) + 6;
+                }
+                num1 = quotient * divisor;
+                num2 = divisor;
+                result = quotient;
             }
 
             // Tentukan posisi tanda tanya: 0=kiri, 1=kanan, 2=hasil
