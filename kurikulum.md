@@ -114,6 +114,14 @@ Selaras dengan bab 1 kelas 1 ("Bunyi Apa Itu?") — fokus awal pada pengenalan h
 | 8 | Bangun Datar & Ruang | Sisi, sudut, keliling sederhana bangun datar; mengidentifikasi bangun ruang |
 | 9 | Data & Diagram | Membaca tabel; diagram gambar & diagram batang sederhana |
 
+**Catatan — celah terhadap CP resmi Fase A** (Kepmendikbudristek No. 008/H/KR/2022; tabel Kelas 1 & 2 di atas mengikuti urutan bab buku "Matematika" Vol 1 & 2, bukan elemen CP langsung, jadi ada beberapa poin CP resmi yang tidak masuk bab manapun di atas):
+- **Pecahan ½ dan ¼** (elemen Bilangan) — CP resmi Fase A eksplisit minta "memahami pecahan setengah dan seperempat sebagai bagian dari keseluruhan", tapi tidak ada bab khusus untuk ini di buku Kelas 1 maupun 2 di atas. Belum dicek persis ada di semester/bab mana pada buku aslinya.
+- **Posisi benda** (kanan/kiri/depan/belakang) — elemen Geometri CP resmi, tidak tercakup di bab Bangun Datar/Bangun Ruang Kelas 1 maupun 2.
+- **Makna simbol "="** — elemen Aljabar CP resmi ("menunjukkan pemahaman makna simbol '=' dalam kalimat penjumlahan/pengurangan bilangan cacah sampai 20"). Sebagian tersentuh lewat mode "Cari Yang Hilang" di `games/math/tambahkali`, tapi belum jadi tujuan eksplisit di bab manapun.
+- **Komposisi/dekomposisi bangun datar** (menggabung/mengurai bentuk jadi bentuk lain) — bagian elemen Geometri CP resmi; bab Bangun Datar yang ada baru sebatas mengenali & membedakan bentuk, belum menggabung/mengurainya.
+
+Sebaliknya, buku juga memuat beberapa hal yang melampaui CP minimum Fase A (kemungkinan pengayaan tekstual, bukan kesalahan): bilangan hingga 1000 (CP resmi cuma minta hingga 100), serta satuan baku cm/m & g/kg dan uang rupiah di Kelas 2 (CP resmi Fase A cuma minta satuan tidak baku; satuan baku & uang baru eksplisit di Fase B/Kelas 3+).
+
 ---
 
 ## 3. IPAS (Ilmu Pengetahuan Alam dan Sosial)
@@ -338,10 +346,10 @@ Prioritas materi berdasarkan kebutuhan dan yang sudah ada di repo:
 
 | Status | Mata Pelajaran | Materi yang sudah ada |
 |---|---|---|
-| Sudah ada | Matematika | Nilai tempat (satuan/puluhan/ratusan), tambah & kali |
-| Sudah ada | Bahasa Inggris | Kosakata (tubuh, keluarga, angka, alfabet, hari, bulan), greetings, waktu |
+| Sudah ada | Matematika | Nilai tempat (satuan/puluhan/ratusan), tambah/kurang/kali/bagi (+ Kelas 1 vs 2, level Mahir menyimpan/meminjam) |
+| Sudah ada | Bahasa Inggris | Kosakata (tubuh, keluarga, angka, alfabet, hari, bulan, adjective, warna, hewan, fasilitas umum, rumah), greetings, waktu |
 | Sudah ada | Logika | Pemula–Menengah: Pola & Urutan, Cocokkan Pasangan, Tebak Berikutnya, Labirin Kode. Mahir: Labirin Kode Lanjutan, Jika-Maka, Cari yang Beda |
 | Sudah ada | Bahasa Indonesia | Pengenalan huruf & vokal/konsonan (Mengenal Huruf), menulis huruf via tracing kanvas (Menulis Huruf), menyusun suku kata (Suku Kata) |
-| Belum ada | Matematika | Urutan bilangan, bangun datar, pengukuran, uang |
+| Belum ada | Matematika | Pecahan ½ & ¼, bandingkan/urutkan bilangan, posisi benda (kanan/kiri/depan/belakang), bangun datar & ruang (+ komposisi/dekomposisi), pengukuran (panjang/berat/waktu), uang, data & diagram — lihat catatan celah CP di bab 2 |
 | Belum ada | IPAS | Hewan, tumbuhan, cuaca, tubuh |
 | Belum ada | Pendidikan Pancasila | Simbol Pancasila, aturan |
