@@ -352,7 +352,7 @@
             if (flipped.length >= 2) return;
 
             card.classList.add('revealed');
-            if (card.dataset.type === 'word') speakWord(card.dataset.word);
+            speakWord(card.dataset.word);
             flipped.push(card);
 
             if (flipped.length === 2) {
