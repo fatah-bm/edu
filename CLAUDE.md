@@ -147,6 +147,27 @@ games/english/words/
 
 ---
 
+## Section: `games/english/games`
+
+Game interaktif (kuis/permainan, bukan flashcard) untuk latihan kosakata bahasa Inggris — sengaja dipisah dari `games/english/words/` karena mekaniknya beda (main sambil dites, bukan sekadar lihat+dengar kartu).
+
+**Pola struktur:**
+```
+games/english/games/
+  index.html      ← hub (Listen & Tap, Memory Game)
+  listen-tap/
+    index.html
+  memory/
+    index.html
+```
+
+- `listen-tap/` — kuis pilihan ganda "dengar lalu tap kata yang benar". Mode Latihan Santai / Tantangan 2 Menit, lalu pilih topik (My Body, My Family, Days, Months, Adjective, Color, Animal, Public Facilities, My House, + Mixed). Tiap topik di object `TOPICS` punya `cardType` (`'sprite'` | `'img'` | `'badge'`) yang menentukan cara `renderVisual()` menggambarnya — untuk `sprite`, tiap topik menyimpan `sheet`/`cols`/`rows` sendiri (mengarah ke `assets/my-body.png`, `assets/adjective.png`, dst.) supaya satu fungsi render generik bisa dipakai semua spritesheet, bukan hardcode ke satu file.
+- `memory/` — cocokkan pasangan (kartu visual vs kartu teks kata dari topik yang sama). Struktur data topik & `cardType` sama persis seperti `listen-tap/`. Mode Mixed dibatasi `MIXED_PAIRS = 8` pasang (pool diambil dari semua topik lalu diacak & dipotong 8) — bukan 2 pasang × jumlah topik, supaya papan 4×4 tidak membengkak kalau topik baru ditambah. Kartu tipe visual maupun teks sama-sama mengucapkan kata saat dibuka lewat `speakWord()`.
+
+Keduanya tetap ikuti konvensi top-bar/`playSfx()`/pola mode-lalu-level yang sama seperti game lain, JS tetap inline per file (tidak ada modul JS yang dishare lintas file).
+
+---
+
 ## Game: `games/math/nilai-tempat`
 
 Game drag-and-drop nilai tempat untuk anak SD kelas 1-2. Suara mengucapkan angka dalam bahasa Indonesia, anak mendrag kartu digit 0–9 ke kotak Ratusan/Puluhan/Satuan yang tepat.

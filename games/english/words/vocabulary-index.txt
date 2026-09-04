@@ -22,6 +22,7 @@ halaman        | icons8 name   | status
 ---------------|---------------|-------
 Words          | open-book     | ⚠️
 Conversation   | chat          | ✅
+Games          | controller    | ✅
 
 --- games/english/words/index.html ---
 halaman             | icons8 name    | status
@@ -38,6 +39,14 @@ Color               | paint-palette  | ⚠️
 Animal              | lion           | ⚠️
 Public Facilities   | city-buildings | ⚠️
 My House            | home           | ✅
+
+--- games/english/games/index.html ---
+(Listen & Tap dan Memory Game — dipindah keluar dari words/ karena
+mekaniknya kuis/permainan, bukan flashcard kosakata)
+halaman             | icons8 name    | status
+--------------------|----------------|-------
+Listen & Tap        | speaker        | ✅
+Memory Game         | cards          | ✅
 
 --- games/english/conversation/index.html ---
 (menggunakan emoji langsung, bukan Icons8)
