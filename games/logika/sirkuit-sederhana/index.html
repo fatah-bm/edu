@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pipa Air</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="../../../assets/shared.css">
+    <style>
+        .container { max-width: 520px; }
+        .level-info {
+            font-size: 13px;
+            color: #999;
+            margin: 0 0 4px 0;
+        }
+        .goal {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0 0 6px 0;
+        }
+        .hint {
+            font-size: 12px;
+            color: #ff9800;
+            font-weight: bold;
+            margin: 0 0 16px 0;
+        }
+
+        /* ── Papan pipa ── */
+        .circuit-board {
+            background: #eef5fb;
+            border-radius: 16px;
+            padding: 10px 4px;
+            margin: 0 0 18px 0;
+            overflow-x: auto;
+        }
+        .circuit-svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+        .wire { stroke: #b8c9e0; stroke-width: 6; fill: none; stroke-linecap: round; }
+        .wire.live { stroke: #29b6f6; filter: drop-shadow(0 0 3px #4fc3f7); }
+        .junction-dot { fill: #b8c9e0; }
+        .junction-dot.live { fill: #29b6f6; }
+        .circuit-end-text {
+            font-size: 30px;
+            text-anchor: middle;
+            dominant-baseline: central;
+            transition: filter 0.2s, opacity 0.2s;
+        }
+        .circuit-end-text.dim { filter: grayscale(1) brightness(0.75); opacity: 0.5; }
+
+        /* ── Gerbang/pintu air ── */
+        .switch-chip {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1px;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            padding: 4px;
+            border-radius: 10px;
+            border: 3px solid #ccc;
+            background: white;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 3px 0 #bbb;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .switch-chip:active { transform: translateY(3px); box-shadow: none; }
+        .switch-icon { font-size: 20px; line-height: 1; }
+        .switch-state {
+            font-size: 10px;
+            font-weight: bold;
+            color: #999;
+            line-height: 1;
+        }
+        .switch-chip.on {
+            border-color: #2ecc71;
+            background: #eafaf1;
+            box-shadow: 0 3px 0 #27ae60;
+        }
+        .switch-chip.on .switch-state { color: #27ae60; }
+        .switch-chip.inverted { border-style: dashed; }
+        .switch-chip.inverted:not(.on) { border-color: #ff9800; }
+        .switch-chip.inverted:not(.on) .switch-state { color: #cc7a00; }
+
+        .btn-check {
+            width: 100%;
+            padding: 14px;
+            font-family: inherit;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 5px 0 var(--accent-shadow);
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            margin-bottom: 10px;
+        }
+        .btn-check:active { transform: translateY(5px); box-shadow: none; }
+    </style>
+</head>
+<body data-theme="logika">
+    <div id="topbar"></div>
+    <script src="../../../assets/shared.js"></script>
+    <script>
+        initTopBar({ title: 'Pipa Air', backHref: '../', homeHref: '../../../', audio: true });
+    </script>
+
+    <div class="container" id="container"></div>
+
+    <script>
+        const ROUND_SIZE = 8;
+        const UNIT_W = 110; // lebar SVG per "level" seri
+        const LANE_H = 64;  // tinggi SVG per jalur paralel
+        const MARGIN_X = 34;
+
+        // Makin besar index, makin banyak gerbang (n) & makin dalam campuran seri/paralel (depth).
+        const LEVEL_PARAMS = [
+            { n: 1, depth: 0, invert: 0 },
+            { n: 2, depth: 1, invert: 0 },
+            { n: 2, depth: 1, invert: 1 },
+            { n: 3, depth: 2, invert: 0 },
+            { n: 3, depth: 2, invert: 1 },
+            { n: 4, depth: 2, invert: 1 },
+            { n: 4, depth: 3, invert: 1 },
+            { n: 5, depth: 3, invert: 2 }
+        ];
+
+        let roundLevels = [];
+        let currentQuestion = 0;
+        let score = 0;
+        let level = null;
+        let switchState = {};
+        let answered = false;
+        let questionScored = false;
+
+        // --- Pembuatan topologi acak (seri & paralel bisa bergabung berulang) ---
+        function makeLeaf(invertBudget, nextId) {
+            const inverted = invertBudget.count > 0 && Math.random() < 0.5;
+            if (inverted) invertBudget.count--;
+            return { type: 'switch', id: nextId.next++, inverted };
+        }
+
+        function randomTopology(n, depth, invertBudget, nextId) {
+            if (n <= 1) return makeLeaf(invertBudget, nextId);
+            if (depth <= 0) {
+                // Kehabisan jatah kedalaman — gabungkan sisa gerbang jadi satu kelompok datar
+                const type = Math.random() < 0.5 ? 'series' : 'parallel';
+                const children = Array.from({ length: n }, () => makeLeaf(invertBudget, nextId));
+                return { type, children };
+            }
+            const type = Math.random() < 0.5 ? 'series' : 'parallel';
+            const leftN = 1 + Math.floor(Math.random() * (n - 1));
+            const rightN = n - leftN;
+            return {
+                type,
+                children: [
+                    randomTopology(leftN, depth - 1, invertBudget, nextId),
+                    randomTopology(rightN, depth - 1, invertBudget, nextId)
+                ]
+            };
+        }
+
+        function collectSwitches(node, out) {
+            out = out || [];
+            if (node.type === 'switch') out.push(node);
+            else node.children.forEach(c => collectSwitches(c, out));
+            return out;
+        }
+
+        function containsType(node, type) {
+            if (node.type === 'switch') return false;
+            if (node.type === type) return true;
+            return node.children.some(c => containsType(c, type));
+        }
+
+        function describeTopology(node, switchCount, hasInverted) {
+            let base;
+            if (switchCount === 1) base = 'Satu gerbang';
+            else if (containsType(node, 'series') && containsType(node, 'parallel')) base = `${switchCount} gerbang campuran`;
+            else if (containsType(node, 'parallel')) base = `${switchCount} gerbang bercabang`;
+            else base = `${switchCount} gerbang berurutan`;
+            return hasInverted ? base + ' (ada yang terbalik)' : base;
+        }
+
+        function generateLevel(index) {
+            const cfg = LEVEL_PARAMS[index];
+            const nextId = { next: 0 };
+            const invertBudget = { count: cfg.invert };
+            const topology = randomTopology(cfg.n, cfg.depth, invertBudget, nextId);
+            const switches = collectSwitches(topology);
+            const hasInverted = switches.some(s => s.inverted);
+            const initState = {};
+            switches.forEach(sw => { initState[sw.id] = Math.random() < 0.5; });
+            return {
+                topology, switches, hasInverted,
+                label: describeTopology(topology, switches.length, hasInverted),
+                goal: Math.random() < 0.5,
+                initState
+            };
+        }
+
+        // --- Evaluasi aliran air ---
+        function evalNode(node, state) {
+            if (node.type === 'switch') {
+                const open = !!state[node.id];
+                return node.inverted ? !open : open;
+            }
+            if (node.type === 'series') return node.children.every(c => evalNode(c, state));
+            return node.children.some(c => evalNode(c, state)); // parallel
+        }
+
+        // --- Ukur & render pohon topologi jadi diagram pipa (SVG) ---
+        function measure(node) {
+            if (node.type === 'switch') return { w: 1, h: 1 };
+            const kids = node.children.map(measure);
+            if (node.type === 'series') {
+                return { w: kids.reduce((s, k) => s + k.w, 0), h: Math.max(...kids.map(k => k.h)) };
+            }
+            return { w: Math.max(...kids.map(k => k.w)), h: kids.reduce((s, k) => s + k.h, 0) };
+        }
+
+        function wireLine(x1, y1, x2, y2, live) {
+            return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="wire${live ? ' live' : ''}" />`;
+        }
+        function junctionDot(cx, cy, live) {
+            return `<circle cx="${cx}" cy="${cy}" r="5" class="junction-dot${live ? ' live' : ''}" />`;
+        }
+        function gateButton(node, cx, cy) {
+            const isOpen = !!switchState[node.id];
+            return `<foreignObject x="${cx - 30}" y="${cy - 27}" width="60" height="54">
+                <button xmlns="http://www.w3.org/1999/xhtml" class="switch-chip${node.inverted ? ' inverted' : ''}${isOpen ? ' on' : ''}"
+                        data-id="${node.id}" onclick="toggleSwitch(${node.id})">
+                    <span class="switch-icon">${node.inverted ? '🔀' : '🚪'}</span>
+                    <span class="switch-state">${isOpen ? 'BUKA' : 'TUTUP'}</span>
+                </button>
+            </foreignObject>`;
+        }
+
+        let svgBody;
+
+        function renderNode(node, x, y, w, h) {
+            const centerY = y + (h * LANE_H) / 2;
+            if (node.type === 'switch') {
+                const cx = x + (w * UNIT_W) / 2;
+                const open = !!switchState[node.id];
+                const conducts = node.inverted ? !open : open;
+                svgBody += wireLine(x, centerY, cx - 30, centerY, conducts);
+                svgBody += gateButton(node, cx, centerY);
+                svgBody += wireLine(cx + 30, centerY, x + w * UNIT_W, centerY, conducts);
+                return;
+            }
+            const kids = node.children;
+            const kidMeasures = kids.map(measure);
+            if (node.type === 'series') {
+                let cursorX = x;
+                kids.forEach((kid, i) => {
+                    const km = kidMeasures[i];
+                    const kidY = y + ((h - km.h) * LANE_H) / 2;
+                    renderNode(kid, cursorX, kidY, km.w, km.h);
+                    cursorX += km.w * UNIT_W;
+                });
+                return;
+            }
+            // parallel: susun cabang dari atas ke bawah, sambung via garis penghubung kiri/kanan
+            const totalW = w * UNIT_W;
+            let cursorY = y;
+            const laneCenters = kidMeasures.map(km => {
+                const c = cursorY + (km.h * LANE_H) / 2;
+                cursorY += km.h * LANE_H;
+                return c;
+            });
+            const overallConducts = evalNode(node, switchState);
+            svgBody += wireLine(x, laneCenters[0], x, laneCenters[laneCenters.length - 1], overallConducts);
+            svgBody += wireLine(x + totalW, laneCenters[0], x + totalW, laneCenters[laneCenters.length - 1], overallConducts);
+            svgBody += junctionDot(x, centerY, overallConducts);
+            svgBody += junctionDot(x + totalW, centerY, overallConducts);
+
+            cursorY = y;
+            kids.forEach((kid, i) => {
+                const km = kidMeasures[i];
+                const laneY = laneCenters[i];
+                const kidW = km.w * UNIT_W;
+                const padLeft = (totalW - kidW) / 2;
+                const laneConducts = evalNode(kid, switchState);
+                svgBody += wireLine(x, laneY, x + padLeft, laneY, laneConducts);
+                renderNode(kid, x + padLeft, cursorY, km.w, km.h);
+                svgBody += wireLine(x + padLeft + kidW, laneY, x + totalW, laneY, laneConducts);
+                cursorY += km.h * LANE_H;
+            });
+        }
+
+        function renderCircuitBoard() {
+            svgBody = '';
+            const m = measure(level.topology);
+            const boardW = Math.max(m.w * UNIT_W, UNIT_W);
+            const boardH = Math.max(m.h * LANE_H, LANE_H);
+            renderNode(level.topology, MARGIN_X, 10, m.w, m.h);
+
+            const centerY = 10 + boardH / 2;
+            const svgW = boardW + MARGIN_X * 2;
+            const svgH = boardH + 20;
+            const overallConducts = evalNode(level.topology, switchState);
+
+            const svg = `
+                <svg class="circuit-svg" viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg">
+                    ${wireLine(16, centerY, MARGIN_X, centerY, overallConducts)}
+                    ${svgBody}
+                    ${wireLine(MARGIN_X + boardW, centerY, svgW - 16, centerY, overallConducts)}
+                    <text x="12" y="${centerY}" class="circuit-end-text">🚰</text>
+                    <text id="lamp" x="${svgW - 12}" y="${centerY}" class="circuit-end-text${overallConducts ? '' : ' dim'}">🪣</text>
+                </svg>`;
+            document.getElementById('circuitBoard').innerHTML = svg;
+        }
+
+        function toggleSwitch(id) {
+            if (answered) return;
+            switchState[id] = !switchState[id];
+            renderCircuitBoard();
+        }
+
+        // --- Alur layar ---
+        function renderGameScreen() {
+            const container = document.getElementById('container');
+            container.innerHTML = `
+                <p class="level-info" id="levelInfo"></p>
+                <p class="goal" id="goal"></p>
+                <p class="hint" id="hint" style="display:none;">🔀 = gerbang terbalik, air lewat kalau TUTUP!</p>
+                <div class="circuit-board" id="circuitBoard"></div>
+                <div class="feedback" id="feedback"></div>
+                <button class="btn-check" id="btnCheck" onclick="checkAnswer()">✅ Cek</button>
+                <div class="score" id="score">Skor: 0/0</div>
+                <button class="btn-next" id="nextBtn" onclick="nextQuestion()" disabled>Soal Berikutnya</button>
+            `;
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = `Skor: ${score}/${currentQuestion + 1}`;
+        }
+
+        function loadQuestion() {
+            level = roundLevels[currentQuestion];
+            switchState = { ...level.initState };
+            answered = false;
+            questionScored = false;
+
+            document.getElementById('levelInfo').textContent =
+                `Soal ${currentQuestion + 1}/${roundLevels.length} · ${level.label}`;
+            document.getElementById('goal').textContent =
+                level.goal ? '🎯 Isi embernya!' : '🎯 Jangan sampai ember terisi!';
+            document.getElementById('hint').style.display = level.hasInverted ? 'block' : 'none';
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('btnCheck').disabled = false;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('nextBtn').textContent = 'Soal Berikutnya';
+            renderCircuitBoard();
+            updateScore();
+        }
+
+        function checkAnswer() {
+            if (answered) return;
+            const flowing = evalNode(level.topology, switchState);
+            const feedback = document.getElementById('feedback');
+
+            if (flowing === level.goal) {
+                answered = true;
+                if (!questionScored) {
+                    questionScored = true;
+                    score++;
+                    updateScore();
+                }
+                feedback.textContent = '🎉 Tepat sekali!';
+                feedback.className = 'feedback correct';
+                playSfx('correct');
+                confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
+                document.getElementById('btnCheck').disabled = true;
+                const nextBtn = document.getElementById('nextBtn');
+                nextBtn.disabled = false;
+                nextBtn.textContent = currentQuestion === roundLevels.length - 1 ? 'Selesai' : 'Soal Berikutnya';
+            } else {
+                feedback.textContent = '🤔 Belum tepat, coba atur gerbangnya lagi!';
+                feedback.className = 'feedback wrong';
+                playSfx('wrong');
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion >= roundLevels.length) {
+                showFinish();
+            } else {
+                loadQuestion();
+            }
+        }
+
+        function startGame() {
+            roundLevels = LEVEL_PARAMS.map((_, i) => generateLevel(i));
+            currentQuestion = 0;
+            score = 0;
+            renderGameScreen();
+            loadQuestion();
+        }
+
+        function showFinish() {
+            playSfx('finish');
+            const container = document.getElementById('container');
+            const percentage = Math.round((score / roundLevels.length) * 100);
+            container.innerHTML = `
+                <h2 style="color: var(--accent); margin-bottom: 20px;">🎉 Selesai!</h2>
+                <p style="font-size: 24px; color: #2c3e50; margin: 20px 0;">Skor Akhir: <strong>${score}/${roundLevels.length}</strong></p>
+                <p style="font-size: 18px; color: #666; margin: 20px 0;">${percentage}%</p>
+                <p style="font-size: 16px; color: #666;">${percentage >= 80 ? '⭐ Luar biasa!' : percentage >= 60 ? '👍 Bagus!' : '💪 Terus berlatih!'}</p>
+                <div style="display:flex; gap:12px; justify-content:center; margin-top:20px; flex-wrap:wrap;">
+                    <button class="btn-next" style="margin:0;" onclick="startGame()">🔄 Main Lagi</button>
+                    <a href="../" class="btn-outline">Kembali</a>
+                </div>
+            `;
+        }
+
+        startGame();
+    </script>
+</body>
+</html>
