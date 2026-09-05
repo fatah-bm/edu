@@ -324,6 +324,7 @@
                 feedback.textContent = `🎉 Sampai tujuan! Berhasil dalam ${program.length} langkah.`;
                 feedback.className = 'feedback correct';
                 solved = true;
+                running = false; // animasi selesai — tanpa ini, tombol "Ulangi Lagi" terkunci selamanya
                 if (!questionScored) {
                     questionScored = true;
                     score++;

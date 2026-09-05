@@ -263,6 +263,12 @@
                 chip.onclick = () => removeCommandAt(index);
                 row.appendChild(chip);
             });
+            // Refresh status tombol Repeat setiap kali isi program berubah (bukan cuma
+            // saat setControlsEnabled dipanggil), tapi jangan timpa saat sedang berjalan/selesai.
+            if (!running && !solved) {
+                const repeatBtn = document.getElementById('btnRepeat');
+                if (repeatBtn) repeatBtn.disabled = program.length === 0;
+            }
         }
 
         function setChipState(index, state) {
@@ -279,10 +285,14 @@
         }
 
         function setControlsEnabled(enabled) {
-            ['btnRepeat', 'btnUp', 'btnLeft', 'btnDown', 'btnRight', 'btnUndo', 'btnClear', 'btnRun'].forEach(id => {
+            ['btnUp', 'btnLeft', 'btnDown', 'btnRight', 'btnUndo', 'btnClear', 'btnRun'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.disabled = !enabled;
             });
+            // Tombol Repeat butuh minimal 1 langkah nyata untuk diulang — nonaktifkan
+            // (bukan cuma diam-diam menolak tap) saat program masih kosong.
+            const repeatBtn = document.getElementById('btnRepeat');
+            if (repeatBtn) repeatBtn.disabled = !enabled || program.length === 0;
         }
 
         function addCommand(dir) {
@@ -353,6 +363,7 @@
                 feedback.textContent = `🎉 Sampai tujuan! Berhasil dalam ${program.length} langkah.`;
                 feedback.className = 'feedback correct';
                 solved = true;
+                running = false; // animasi selesai — tanpa ini, tombol "Ulangi Lagi" terkunci selamanya
                 if (!questionScored) {
                     questionScored = true;
                     score++;
