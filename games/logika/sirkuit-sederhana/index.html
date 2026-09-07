@@ -195,14 +195,40 @@
             const topology = randomTopology(cfg.n, cfg.depth, invertBudget, nextId);
             const switches = collectSwitches(topology);
             const hasInverted = switches.some(s => s.inverted);
+            const goal = Math.random() < 0.5;
+            // Kondisi awal SENGAJA dibuat berlawanan dari goal (bukan acak murni),
+            // supaya anak wajib mengubah minimal satu gerbang dulu — bukan langsung
+            // tekan Cek dan kebetulan sudah benar tanpa berbuat apa-apa.
             const initState = {};
-            switches.forEach(sw => { initState[sw.id] = Math.random() < 0.5; });
+            assignForTarget(topology, !goal, initState);
             return {
                 topology, switches, hasInverted,
                 label: describeTopology(topology, switches.length, hasInverted),
-                goal: Math.random() < 0.5,
+                goal,
                 initState
             };
+        }
+
+        // Isi `out` dengan status gerbang yang menjamin evalNode(node, out) === target,
+        // dengan sedikit acak (gerbang mana yang "menentukan" & nilai gerbang lain yang
+        // tidak berpengaruh) supaya kondisi awal tidak selalu berpola sama.
+        function assignForTarget(node, target, out) {
+            if (node.type === 'switch') {
+                out[node.id] = node.inverted ? !target : target;
+                return;
+            }
+            const kids = node.children;
+            const isSeries = node.type === 'series';
+            const allSame = (isSeries && target) || (!isSeries && !target);
+            if (allSame) {
+                kids.forEach(k => assignForTarget(k, target, out));
+            } else {
+                const forcedIndex = Math.floor(Math.random() * kids.length);
+                kids.forEach((k, i) => {
+                    if (i === forcedIndex) assignForTarget(k, target, out);
+                    else assignForTarget(k, Math.random() < 0.5, out);
+                });
+            }
         }
 
         // --- Evaluasi aliran air ---
