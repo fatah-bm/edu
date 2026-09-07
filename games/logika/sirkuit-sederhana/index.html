@@ -7,23 +7,23 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="../../../assets/shared.css">
     <style>
-        .container { max-width: 520px; }
+        .container { max-width: 560px; }
         .level-info {
             font-size: 13px;
             color: #999;
             margin: 0 0 4px 0;
         }
         .goal {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: bold;
             color: #2c3e50;
-            margin: 0 0 6px 0;
+            margin: 0 0 4px 0;
         }
         .hint {
             font-size: 12px;
             color: #ff9800;
             font-weight: bold;
-            margin: 0 0 16px 0;
+            margin: 4px 0 16px 0;
         }
 
         /* ── Papan pipa ── */
@@ -46,6 +46,12 @@
             transition: filter 0.2s, opacity 0.2s;
         }
         .circuit-end-text.dim { filter: grayscale(1) brightness(0.75); opacity: 0.5; }
+        .bucket-num {
+            font-size: 13px;
+            font-weight: bold;
+            fill: #6b7c93;
+            text-anchor: middle;
+        }
 
         /* ── Gerbang/pintu air ── */
         .switch-chip {
@@ -116,19 +122,22 @@
     <script>
         const ROUND_SIZE = 8;
         const UNIT_W = 110; // lebar SVG per "level" seri
-        const LANE_H = 64;  // tinggi SVG per jalur paralel
+        const LANE_H = 64;  // tinggi SVG per jalur paralel/cabang ember
         const MARGIN_X = 34;
 
-        // Makin besar index, makin banyak gerbang (n) & makin dalam campuran seri/paralel (depth).
+        // Level tanpa `branches` = satu ember biasa (n/depth/invert seperti sebelumnya).
+        // Level dengan `branches` = satu akar (sumber) yang bercabang ke beberapa DAUN
+        // (ember) di ujungnya — `sharedN` gerbang bersama sebelum cabang (mempengaruhi
+        // SEMUA ember sekaligus), lalu tiap ember punya gerbang tambahan sendiri.
         const LEVEL_PARAMS = [
             { n: 1, depth: 0, invert: 0 },
             { n: 2, depth: 1, invert: 0 },
             { n: 2, depth: 1, invert: 1 },
             { n: 3, depth: 2, invert: 0 },
-            { n: 3, depth: 2, invert: 1 },
-            { n: 4, depth: 2, invert: 1 },
-            { n: 4, depth: 3, invert: 1 },
-            { n: 5, depth: 3, invert: 2 }
+            { sharedN: 0, branches: [{ n: 1, depth: 0, invert: 0 }, { n: 1, depth: 0, invert: 0 }] },
+            { sharedN: 1, branches: [{ n: 1, depth: 0, invert: 1 }, { n: 1, depth: 0, invert: 0 }] },
+            { sharedN: 2, branches: [{ n: 2, depth: 1, invert: 1 }, { n: 2, depth: 1, invert: 0 }] },
+            { sharedN: 2, branches: [{ n: 2, depth: 1, invert: 1 }, { n: 2, depth: 1, invert: 0 }, { n: 1, depth: 0, invert: 1 }] }
         ];
 
         let roundLevels = [];
@@ -188,27 +197,6 @@
             return hasInverted ? base + ' (ada yang terbalik)' : base;
         }
 
-        function generateLevel(index) {
-            const cfg = LEVEL_PARAMS[index];
-            const nextId = { next: 0 };
-            const invertBudget = { count: cfg.invert };
-            const topology = randomTopology(cfg.n, cfg.depth, invertBudget, nextId);
-            const switches = collectSwitches(topology);
-            const hasInverted = switches.some(s => s.inverted);
-            const goal = Math.random() < 0.5;
-            // Kondisi awal SENGAJA dibuat berlawanan dari goal (bukan acak murni),
-            // supaya anak wajib mengubah minimal satu gerbang dulu — bukan langsung
-            // tekan Cek dan kebetulan sudah benar tanpa berbuat apa-apa.
-            const initState = {};
-            assignForTarget(topology, !goal, initState);
-            return {
-                topology, switches, hasInverted,
-                label: describeTopology(topology, switches.length, hasInverted),
-                goal,
-                initState
-            };
-        }
-
         // Isi `out` dengan status gerbang yang menjamin evalNode(node, out) === target,
         // dengan sedikit acak (gerbang mana yang "menentukan" & nilai gerbang lain yang
         // tidak berpengaruh) supaya kondisi awal tidak selalu berpola sama.
@@ -231,6 +219,54 @@
             }
         }
 
+        function buildBranch(bcfg, nextId) {
+            const invertBudget = { count: bcfg.invert };
+            const topology = randomTopology(bcfg.n, bcfg.depth, invertBudget, nextId);
+            const switches = collectSwitches(topology);
+            const hasInverted = switches.some(s => s.inverted);
+            return {
+                topology, switches, hasInverted, goal: Math.random() < 0.5,
+                label: describeTopology(topology, switches.length, hasInverted)
+            };
+        }
+
+        function generateLevel(index) {
+            const cfg = LEVEL_PARAMS[index];
+            const nextId = { next: 0 };
+            const initState = {};
+
+            if (!cfg.branches) {
+                // Satu ember biasa — satu pohon, satu tujuan.
+                const branch = buildBranch(cfg, nextId);
+                assignForTarget(branch.topology, !branch.goal, initState);
+                return {
+                    shared: null, branches: [branch],
+                    hasInverted: branch.hasInverted, label: branch.label, initState
+                };
+            }
+
+            // Banyak ember — satu akar (gerbang bersama, opsional) bercabang ke beberapa daun.
+            const shared = cfg.sharedN > 0 ? randomTopology(cfg.sharedN, 1, { count: 0 }, nextId) : null;
+            const branches = cfg.branches.map(bcfg => buildBranch(bcfg, nextId));
+
+            // Kondisi awal: paksa gerbang bersama TERBUKA (supaya tidak jadi penentu
+            // tunggal yang membingungkan), lalu tiap cabang dipaksa berlawanan dari
+            // tujuannya sendiri — hasilnya semua ember dijamin salah di awal sekaligus.
+            if (shared) assignForTarget(shared, true, initState);
+            branches.forEach(b => assignForTarget(b.topology, !b.goal, initState));
+
+            const totalGerbang = (shared ? collectSwitches(shared).length : 0) +
+                branches.reduce((s, b) => s + b.switches.length, 0);
+            const hasInverted = (shared && collectSwitches(shared).some(s => s.inverted)) ||
+                branches.some(b => b.hasInverted);
+
+            return {
+                shared, branches, hasInverted,
+                label: `${branches.length} ember · ${totalGerbang} gerbang`,
+                initState
+            };
+        }
+
         // --- Evaluasi aliran air ---
         function evalNode(node, state) {
             if (node.type === 'switch') {
@@ -239,6 +275,11 @@
             }
             if (node.type === 'series') return node.children.every(c => evalNode(c, state));
             return node.children.some(c => evalNode(c, state)); // parallel
+        }
+
+        function branchReaches(branch) {
+            const sharedOk = level.shared ? evalNode(level.shared, switchState) : true;
+            return sharedOk && evalNode(branch.topology, switchState);
         }
 
         // --- Ukur & render pohon topologi jadi diagram pipa (SVG) ---
@@ -268,32 +309,45 @@
             </foreignObject>`;
         }
 
-        let svgBody;
-
-        function renderNode(node, x, y, w, h) {
+        // Menggambar simpul secara rekursif SAMBIL membawa `incoming` (apakah air
+        // benar-benar sampai ke pintu masuk simpul ini dari sumber). Ini penting:
+        // status "mengalir" tiap kabel harus dihitung dari akumulasi hulu ke hilir,
+        // bukan cuma status gerbang itu sendiri — kalau tidak, kabel bisa tampak
+        // "mengalir" padahal gerbang SEBELUMNYA tertutup (bug yang pernah terjadi).
+        // Mengembalikan { svg, outgoing } — outgoing dipakai simpul induk sebagai
+        // incoming untuk simpul berikutnya.
+        function renderNode(node, x, y, w, h, incoming) {
             const centerY = y + (h * LANE_H) / 2;
             if (node.type === 'switch') {
                 const cx = x + (w * UNIT_W) / 2;
                 const open = !!switchState[node.id];
-                const conducts = node.inverted ? !open : open;
-                svgBody += wireLine(x, centerY, cx - 30, centerY, conducts);
-                svgBody += gateButton(node, cx, centerY);
-                svgBody += wireLine(cx + 30, centerY, x + w * UNIT_W, centerY, conducts);
-                return;
+                const selfConducts = node.inverted ? !open : open;
+                const outgoing = incoming && selfConducts;
+                const svg = wireLine(x, centerY, cx - 30, centerY, incoming) +
+                    gateButton(node, cx, centerY) +
+                    wireLine(cx + 30, centerY, x + w * UNIT_W, centerY, outgoing);
+                return { svg, outgoing };
             }
+
             const kids = node.children;
             const kidMeasures = kids.map(measure);
+
             if (node.type === 'series') {
                 let cursorX = x;
+                let flow = incoming;
+                let svg = '';
                 kids.forEach((kid, i) => {
                     const km = kidMeasures[i];
                     const kidY = y + ((h - km.h) * LANE_H) / 2;
-                    renderNode(kid, cursorX, kidY, km.w, km.h);
+                    const res = renderNode(kid, cursorX, kidY, km.w, km.h, flow);
+                    svg += res.svg;
+                    flow = res.outgoing;
                     cursorX += km.w * UNIT_W;
                 });
-                return;
+                return { svg, outgoing: flow };
             }
-            // parallel: susun cabang dari atas ke bawah, sambung via garis penghubung kiri/kanan
+
+            // parallel
             const totalW = w * UNIT_W;
             let cursorY = y;
             const laneCenters = kidMeasures.map(km => {
@@ -301,47 +355,92 @@
                 cursorY += km.h * LANE_H;
                 return c;
             });
-            const overallConducts = evalNode(node, switchState);
-            svgBody += wireLine(x, laneCenters[0], x, laneCenters[laneCenters.length - 1], overallConducts);
-            svgBody += wireLine(x + totalW, laneCenters[0], x + totalW, laneCenters[laneCenters.length - 1], overallConducts);
-            svgBody += junctionDot(x, centerY, overallConducts);
-            svgBody += junctionDot(x + totalW, centerY, overallConducts);
-
+            let branchesSvg = '';
+            const branchOutgoings = [];
             cursorY = y;
             kids.forEach((kid, i) => {
                 const km = kidMeasures[i];
                 const laneY = laneCenters[i];
                 const kidW = km.w * UNIT_W;
                 const padLeft = (totalW - kidW) / 2;
-                const laneConducts = evalNode(kid, switchState);
-                svgBody += wireLine(x, laneY, x + padLeft, laneY, laneConducts);
-                renderNode(kid, x + padLeft, cursorY, km.w, km.h);
-                svgBody += wireLine(x + padLeft + kidW, laneY, x + totalW, laneY, laneConducts);
+                const res = renderNode(kid, x + padLeft, cursorY, km.w, km.h, incoming);
+                branchesSvg += wireLine(x, laneY, x + padLeft, laneY, incoming) +
+                    res.svg +
+                    wireLine(x + padLeft + kidW, laneY, x + totalW, laneY, res.outgoing);
+                branchOutgoings.push(res.outgoing);
                 cursorY += km.h * LANE_H;
             });
+            const anyOutgoing = branchOutgoings.some(v => v);
+            const connectorsSvg = wireLine(x, laneCenters[0], x, laneCenters[laneCenters.length - 1], incoming) +
+                wireLine(x + totalW, laneCenters[0], x + totalW, laneCenters[laneCenters.length - 1], anyOutgoing) +
+                junctionDot(x, centerY, incoming) +
+                junctionDot(x + totalW, centerY, anyOutgoing);
+            return { svg: connectorsSvg + branchesSvg, outgoing: anyOutgoing };
         }
 
         function renderCircuitBoard() {
-            svgBody = '';
-            const m = measure(level.topology);
-            const boardW = Math.max(m.w * UNIT_W, UNIT_W);
-            const boardH = Math.max(m.h * LANE_H, LANE_H);
-            renderNode(level.topology, MARGIN_X, 10, m.w, m.h);
+            const sharedM = level.shared ? measure(level.shared) : { w: 0, h: 0 };
+            const branchMs = level.branches.map(b => measure(b.topology));
+            const forkW = Math.max(...branchMs.map(m => m.w));
+            const forkH = branchMs.reduce((s, m) => s + m.h, 0);
+            const totalW = sharedM.w + forkW;
+            const totalH = Math.max(sharedM.h, forkH, 1);
 
+            const boardW = Math.max(totalW * UNIT_W, UNIT_W);
+            const boardH = Math.max(totalH * LANE_H, LANE_H);
             const centerY = 10 + boardH / 2;
-            const svgW = boardW + MARGIN_X * 2;
-            const svgH = boardH + 20;
-            const overallConducts = evalNode(level.topology, switchState);
 
-            const svg = `
+            let svg = wireLine(16, MARGIN_X > 0 ? centerY : centerY, MARGIN_X, centerY, true);
+            let x = MARGIN_X;
+            let incoming = true;
+
+            if (level.shared) {
+                const sharedY = centerY - (sharedM.h * LANE_H) / 2;
+                const res = renderNode(level.shared, x, sharedY, sharedM.w, sharedM.h, true);
+                svg += res.svg;
+                incoming = res.outgoing;
+                x += sharedM.w * UNIT_W;
+            }
+
+            const forkPxW = forkW * UNIT_W;
+            const multiFork = level.branches.length > 1;
+            let cursorY = 10 + (boardH - forkH * LANE_H) / 2;
+            const laneCenters = branchMs.map(bm => {
+                const c = cursorY + (bm.h * LANE_H) / 2;
+                cursorY += bm.h * LANE_H;
+                return c;
+            });
+
+            if (multiFork) {
+                svg += wireLine(x, laneCenters[0], x, laneCenters[laneCenters.length - 1], incoming);
+                svg += junctionDot(x, centerY, incoming);
+            }
+
+            cursorY = 10 + (boardH - forkH * LANE_H) / 2;
+            level.branches.forEach((b, i) => {
+                const bm = branchMs[i];
+                const laneY = laneCenters[i];
+                const bw = bm.w * UNIT_W;
+                const padLeft = (forkPxW - bw) / 2;
+                svg += wireLine(x, laneY, x + padLeft, laneY, incoming);
+                const res = renderNode(b.topology, x + padLeft, cursorY, bm.w, bm.h, incoming);
+                svg += res.svg;
+                const exitX = x + padLeft + bw;
+                const bucketX = x + forkPxW + 26;
+                svg += wireLine(exitX, laneY, bucketX - 14, laneY, res.outgoing);
+                svg += `<text x="${bucketX}" y="${laneY}" class="circuit-end-text${res.outgoing ? '' : ' dim'}">🪣</text>`;
+                if (multiFork) svg += `<text x="${bucketX}" y="${laneY - 24}" class="bucket-num">${i + 1}</text>`;
+                cursorY += bm.h * LANE_H;
+            });
+
+            const svgW = x + forkPxW + 70;
+            const svgH = boardH + 20;
+
+            document.getElementById('circuitBoard').innerHTML = `
                 <svg class="circuit-svg" viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg">
-                    ${wireLine(16, centerY, MARGIN_X, centerY, overallConducts)}
-                    ${svgBody}
-                    ${wireLine(MARGIN_X + boardW, centerY, svgW - 16, centerY, overallConducts)}
+                    ${svg}
                     <text x="12" y="${centerY}" class="circuit-end-text">🚰</text>
-                    <text id="lamp" x="${svgW - 12}" y="${centerY}" class="circuit-end-text${overallConducts ? '' : ' dim'}">🪣</text>
                 </svg>`;
-            document.getElementById('circuitBoard').innerHTML = svg;
         }
 
         function toggleSwitch(id) {
@@ -355,7 +454,7 @@
             const container = document.getElementById('container');
             container.innerHTML = `
                 <p class="level-info" id="levelInfo"></p>
-                <p class="goal" id="goal"></p>
+                <div id="goalList"></div>
                 <p class="hint" id="hint" style="display:none;">🔀 = gerbang terbalik, air lewat kalau TUTUP!</p>
                 <div class="circuit-board" id="circuitBoard"></div>
                 <div class="feedback" id="feedback"></div>
@@ -377,8 +476,9 @@
 
             document.getElementById('levelInfo').textContent =
                 `Soal ${currentQuestion + 1}/${roundLevels.length} · ${level.label}`;
-            document.getElementById('goal').textContent =
-                level.goal ? '🎯 Isi embernya!' : '🎯 Jangan sampai ember terisi!';
+            document.getElementById('goalList').innerHTML = level.branches.map((b, i) => `
+                <p class="goal">${level.branches.length > 1 ? `🪣${i + 1} — ` : ''}${b.goal ? '🎯 Isi embernya!' : '🎯 Jangan sampai ember terisi!'}</p>
+            `).join('');
             document.getElementById('hint').style.display = level.hasInverted ? 'block' : 'none';
             document.getElementById('feedback').textContent = '';
             document.getElementById('btnCheck').disabled = false;
@@ -390,10 +490,11 @@
 
         function checkAnswer() {
             if (answered) return;
-            const flowing = evalNode(level.topology, switchState);
+            const results = level.branches.map(b => branchReaches(b) === b.goal);
+            const allCorrect = results.every(r => r);
             const feedback = document.getElementById('feedback');
 
-            if (flowing === level.goal) {
+            if (allCorrect) {
                 answered = true;
                 if (!questionScored) {
                     questionScored = true;
@@ -409,7 +510,10 @@
                 nextBtn.disabled = false;
                 nextBtn.textContent = currentQuestion === roundLevels.length - 1 ? 'Selesai' : 'Soal Berikutnya';
             } else {
-                feedback.textContent = '🤔 Belum tepat, coba atur gerbangnya lagi!';
+                const wrongNums = results.map((ok, i) => ok ? null : i + 1).filter(n => n !== null);
+                feedback.textContent = level.branches.length > 1
+                    ? `🤔 Ember ${wrongNums.join(', ')} belum sesuai, coba lagi!`
+                    : '🤔 Belum tepat, coba atur gerbangnya lagi!';
                 feedback.className = 'feedback wrong';
                 playSfx('wrong');
             }

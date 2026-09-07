@@ -31,3 +31,16 @@
 - [ ] **Leaderboard (opsional)**
   - Ranking antar pemain berdasarkan total XP.
   - Bisa dibatasi per kelas/grup agar lebih relevan.
+
+## Logika — Pipa Air (`games/logika/sirkuit-sederhana`)
+
+- [ ] **Model graf penuh (multi-sumber, gerbang fan-in/fan-out) + BFS solve**
+  Versi saat ini adalah **pohon**: satu akar (`shared`, opsional) yang bercabang jadi beberapa daun/ember (`branches`) — setiap gerbang hanya punya satu jalur masuk dan menuju satu titik cabang berikutnya. Ide lanjutan dari user:
+  - Lebih dari satu **sumber air** (bukan cuma satu akar 🚰).
+  - **2 input masuk ke satu gerbang** (gerbang jadi titik pertemuan/merge dari dua jalur berbeda, bukan cuma diteruskan berurutan).
+  - **Satu gerbang punya 2 output** (fan-out ke dua cabang independen dari titik yang sama, bukan lewat percabangan implisit paralel/seri).
+  Begitu ada merge (fan-in) dan sumber jamak, topologi berubah jadi **DAG**, bukan pohon lagi — pembuktian matematis `assignForTarget` (induksi pada pohon series/parallel) tidak otomatis berlaku karena satu gerbang bisa dipengaruhi oleh lebih dari satu "induk". Perlu:
+  - Generator topologi baru yang membangun graf terarah (bukan tree), dengan constraint agar tetap tidak ada siklus.
+  - Solver berbasis **BFS/DFS reachability** dari tiap sumber (mirip `isSolvable()` di `labirin-kode`) untuk memastikan tiap kombinasi saklar yang di-generate benar-benar valid dan dapat dicapai, menggantikan pendekatan pembuktian induktif `assignForTarget`.
+  - Layout SVG baru yang bisa menggambar merge point (garis masuk dari 2 arah ke satu gerbang) dan split point (satu gerbang, dua garis keluar) — `measure()`/`renderNode()` saat ini asumsikan struktur pohon murni.
+  Prioritas: setelah level "banyak ember" (satu akar, banyak daun) stabil dan terasa cukup, karena kompleksitas UI/algoritma jauh lebih tinggi.
