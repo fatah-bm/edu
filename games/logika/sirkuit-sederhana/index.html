@@ -120,24 +120,31 @@
     <div class="container" id="container"></div>
 
     <script>
-        const ROUND_SIZE = 8;
         const UNIT_W = 110; // lebar SVG per "level" seri
         const LANE_H = 64;  // tinggi SVG per jalur paralel/cabang ember
         const MARGIN_X = 34;
 
-        // Level tanpa `branches` = satu ember biasa (n/depth/invert seperti sebelumnya).
-        // Level dengan `branches` = satu akar (sumber) yang bercabang ke beberapa DAUN
-        // (ember) di ujungnya — `sharedN` gerbang bersama sebelum cabang (mempengaruhi
-        // SEMUA ember sekaligus), lalu tiap ember punya gerbang tambahan sendiri.
-        const LEVEL_PARAMS = [
+        function randInt(min, max) { return min + Math.floor(Math.random() * (max - min + 1)); }
+
+        // Soal 1-4: satu pohon, satu ember. Kesulitan naik lewat n (jumlah gerbang) &
+        // depth (kedalaman campuran seri/paralel) — sampai 4 level kedalaman di soal
+        // tersulit (dibuktikan tetap solvable oleh assignForTarget untuk depth berapa pun).
+        const SINGLE_LEVELS = [
             { n: 1, depth: 0, invert: 0 },
             { n: 2, depth: 1, invert: 0 },
-            { n: 2, depth: 1, invert: 1 },
-            { n: 3, depth: 2, invert: 0 },
-            { sharedN: 0, branches: [{ n: 1, depth: 0, invert: 0 }, { n: 1, depth: 0, invert: 0 }] },
-            { sharedN: 1, branches: [{ n: 1, depth: 0, invert: 1 }, { n: 1, depth: 0, invert: 0 }] },
-            { sharedN: 2, branches: [{ n: 2, depth: 1, invert: 1 }, { n: 2, depth: 1, invert: 0 }] },
-            { sharedN: 2, branches: [{ n: 2, depth: 1, invert: 1 }, { n: 2, depth: 1, invert: 0 }, { n: 1, depth: 0, invert: 1 }] }
+            { n: 3, depth: 2, invert: 1 },
+            { n: 5, depth: 4, invert: 1 }
+        ];
+
+        // Soal 5-8: satu akar (gerbang bersama opsional) bercabang ke beberapa daun/ember.
+        // Tiap field [min, max] diacak ULANG setiap sesi (jumlah cabang, jumlah gerbang
+        // bersama, kedalaman tiap cabang) — supaya struktur soal berbeda tiap kali main,
+        // bukan susunan gerbang yang itu-itu saja.
+        const MULTI_LEVELS = [
+            { sharedN: [0, 0], sharedDepth: [0, 0], branchCount: [2, 2], branchN: [1, 1], branchDepth: [0, 0], branchInvert: [0, 0] },
+            { sharedN: [1, 1], sharedDepth: [0, 0], branchCount: [2, 2], branchN: [1, 2], branchDepth: [0, 1], branchInvert: [0, 1] },
+            { sharedN: [1, 2], sharedDepth: [1, 1], branchCount: [2, 3], branchN: [1, 2], branchDepth: [0, 1], branchInvert: [0, 1] },
+            { sharedN: [2, 3], sharedDepth: [1, 2], branchCount: [2, 3], branchN: [2, 3], branchDepth: [1, 3], branchInvert: [0, 2] }
         ];
 
         let roundLevels = [];
@@ -231,13 +238,12 @@
         }
 
         function generateLevel(index) {
-            const cfg = LEVEL_PARAMS[index];
             const nextId = { next: 0 };
             const initState = {};
 
-            if (!cfg.branches) {
+            if (index < SINGLE_LEVELS.length) {
                 // Satu ember biasa — satu pohon, satu tujuan.
-                const branch = buildBranch(cfg, nextId);
+                const branch = buildBranch(SINGLE_LEVELS[index], nextId);
                 assignForTarget(branch.topology, !branch.goal, initState);
                 return {
                     shared: null, branches: [branch],
@@ -246,8 +252,18 @@
             }
 
             // Banyak ember — satu akar (gerbang bersama, opsional) bercabang ke beberapa daun.
-            const shared = cfg.sharedN > 0 ? randomTopology(cfg.sharedN, 1, { count: 0 }, nextId) : null;
-            const branches = cfg.branches.map(bcfg => buildBranch(bcfg, nextId));
+            // Jumlah cabang, jumlah gerbang bersama, dan bentuk tiap cabang diacak dari
+            // rentang [min,max] di MULTI_LEVELS setiap kali soal ini dibuat.
+            const cfg = MULTI_LEVELS[index - SINGLE_LEVELS.length];
+            const sharedN = randInt(cfg.sharedN[0], cfg.sharedN[1]);
+            const sharedDepth = randInt(cfg.sharedDepth[0], cfg.sharedDepth[1]);
+            const branchCount = randInt(cfg.branchCount[0], cfg.branchCount[1]);
+            const shared = sharedN > 0 ? randomTopology(sharedN, sharedDepth, { count: 0 }, nextId) : null;
+            const branches = Array.from({ length: branchCount }, () => buildBranch({
+                n: randInt(cfg.branchN[0], cfg.branchN[1]),
+                depth: randInt(cfg.branchDepth[0], cfg.branchDepth[1]),
+                invert: randInt(cfg.branchInvert[0], cfg.branchInvert[1])
+            }, nextId));
 
             // Kondisi awal: paksa gerbang bersama TERBUKA (supaya tidak jadi penentu
             // tunggal yang membingungkan), lalu tiap cabang dipaksa berlawanan dari
@@ -403,6 +419,10 @@
             }
 
             const forkPxW = forkW * UNIT_W;
+            // Cermin posisi ikon sumber 🚰 di sisi kiri (jarak MARGIN_X dari tepi svg)
+            // supaya diagram simetris — sebelumnya sisi kanan pakai +26/+70 (nyaris 2x
+            // MARGIN_X), bikin seluruh diagram terlihat "nempel" ke kiri.
+            const bucketX = x + forkPxW + MARGIN_X / 2;
             const multiFork = level.branches.length > 1;
             let cursorY = 10 + (boardH - forkH * LANE_H) / 2;
             const laneCenters = branchMs.map(bm => {
@@ -426,14 +446,13 @@
                 const res = renderNode(b.topology, x + padLeft, cursorY, bm.w, bm.h, incoming);
                 svg += res.svg;
                 const exitX = x + padLeft + bw;
-                const bucketX = x + forkPxW + 26;
-                svg += wireLine(exitX, laneY, bucketX - 14, laneY, res.outgoing);
+                svg += wireLine(exitX, laneY, bucketX - 15, laneY, res.outgoing);
                 svg += `<text x="${bucketX}" y="${laneY}" class="circuit-end-text${res.outgoing ? '' : ' dim'}">🪣</text>`;
                 if (multiFork) svg += `<text x="${bucketX}" y="${laneY - 24}" class="bucket-num">${i + 1}</text>`;
                 cursorY += bm.h * LANE_H;
             });
 
-            const svgW = x + forkPxW + 70;
+            const svgW = x + forkPxW + MARGIN_X;
             const svgH = boardH + 20;
 
             document.getElementById('circuitBoard').innerHTML = `
@@ -529,7 +548,8 @@
         }
 
         function startGame() {
-            roundLevels = LEVEL_PARAMS.map((_, i) => generateLevel(i));
+            const total = SINGLE_LEVELS.length + MULTI_LEVELS.length;
+            roundLevels = Array.from({ length: total }, (_, i) => generateLevel(i));
             currentQuestion = 0;
             score = 0;
             renderGameScreen();
